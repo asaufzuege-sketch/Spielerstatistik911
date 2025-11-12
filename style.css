@@ -47,7 +47,6 @@ body {
   max-width: 1100px;
 }
 
-/* Page-Top Container: Buttons zentriert über Titel */
 .page-top {
   display: flex;
   flex-direction: column;
@@ -132,7 +131,6 @@ h1 {
 }
 #playerSelectionPage .confirm-btn:hover { filter: brightness(0.98); }
 
-/* TOP BAR - zentriert */
 .top-bar {
   display: flex;
   flex-wrap: wrap;
@@ -148,7 +146,6 @@ h1 {
   justify-content: center;
 }
 
-/* Basis für alle Buttons (inkl. Import) */
 .top-btn,
 .import-csv-btn {
   background: #2b2b2b;
@@ -171,7 +168,6 @@ h1 {
 .top-btn:hover,
 .import-csv-btn:hover { background: #3b3b3b; }
 
-/* Spezielle Farben */
 .top-btn.timer-left { background: var(--timer-left-bg); }
 .timer {
   font-size: 1.25rem;
@@ -238,7 +234,6 @@ td[data-player]:active { transform: scale(1.12); background: #222; }
 th.sortable { user-select: none; }
 th .sort-arrow { font-size: 0.7rem; color: #ddd }
 
-/* TORBILD */
 .torbild-layout {
   display: flex;
   justify-content: space-between;
@@ -273,7 +268,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   cursor: pointer;
 }
 
-/* ZEITERFASSUNG */
 .time-tracking-box {
   display: flex;
   flex-direction: column;
@@ -320,7 +314,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .period-buttons.bottom-row .time-btn:hover { background-color: #ffd3d3; }
 .time-btn:active { transform: scale(1.05); }
 
-/* SEASON PAGE */
 #seasonPage table { width: auto; table-layout: auto; border-collapse: collapse; font-size: 0.95rem; margin: 0; }
 #seasonPage th, #seasonPage td {
   padding: 8px 6px;
@@ -367,47 +360,41 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 13px;
   margin-top: 6px;
-  table-layout: fixed; /* WICHTIG: fixed für kontrollierte Spaltenbreiten */
+  table-layout: fixed;
 }
 
 .goal-value-table tbody tr:nth-child(odd) { background: var(--row-odd); }
 .goal-value-table tbody tr:nth-child(even) { background: var(--row-even); }
 
-/* Entfernt die helle Hover-Markierung */
 .goal-value-table tbody tr:hover {
   background: inherit !important;
 }
 
-/* Goal Value Header-Zellen */
 .goal-value-table th {
   padding: 6px 4px !important;
 }
 
-/* Erste Spalte (Spielername) - Dynamisch aber OHNE Umbruch */
 .goal-value-table th:first-child,
 .goal-value-table td:first-child {
   text-align: left !important;
   padding-left: 12px !important;
   padding-right: 8px !important;
-  white-space: nowrap !important; /* KEIN Umbruch */
+  white-space: nowrap !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important; /* ... bei zu langen Namen */
+  text-overflow: ellipsis !important;
 }
 
-/* Goal Value Body-Zellen */
 .goal-value-table td {
   padding: 6px 4px !important;
   border-bottom: 1px solid rgba(0,0,0,0.06);
   text-align: center;
 }
 
-/* Bottom Row ohne "Skala" Label */
 .goal-value-table tbody tr:last-child td:first-child {
   background: var(--header-bg);
   border-right: 1px solid #333;
 }
 
-/* Opponent Input-Felder schmaler */
 .goalvalue-title-input {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.08);
@@ -421,59 +408,53 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-size: 0.85rem;
 }
 
-/* Cells */
 .gv-cell { 
   cursor: pointer; 
   font-weight: 600; 
-  user-select: none; 
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-/* Dropdown für Skala-Zeile - VERBESSERTER FIX */
+/* DROPDOWN - BLEIBT OFFEN */
 .gv-scale-dropdown {
   width: 75px !important;
   min-width: 75px !important;
-  padding: 6px 4px !important;
+  padding: 8px 4px !important;
   border-radius: 6px !important;
-  border: 1px solid #444 !important;
-  background: rgba(0,0,0,0.45) !important;
+  border: 2px solid #555 !important;
+  background: rgba(30,30,30,0.95) !important;
   color: #fff !important;
   font-weight: 700 !important;
   text-align: center !important;
   text-align-last: center !important;
   cursor: pointer !important;
-  font-size: 0.9rem !important;
-  -webkit-appearance: menulist !important;
-  -moz-appearance: menulist !important;
-  appearance: menulist !important;
+  font-size: 1rem !important;
   outline: none !important;
   position: relative !important;
-  z-index: 100 !important;
+  z-index: 1000 !important;
 }
 
 .gv-scale-dropdown:hover {
-  background: rgba(0,0,0,0.6) !important;
-  border-color: #666 !important;
+  background: rgba(40,40,40,0.98) !important;
+  border-color: #777 !important;
 }
 
 .gv-scale-dropdown:focus {
   outline: 2px solid #00ff80 !important;
   outline-offset: 1px !important;
   border-color: #00ff80 !important;
-  z-index: 200 !important;
+  z-index: 2000 !important;
+  background: rgba(30,30,30,1) !important;
 }
 
-.gv-scale-dropdown:active {
-  background: rgba(0,0,0,0.7) !important;
-}
-
-/* Dropdown Options */
 .gv-scale-dropdown option {
-  background: #2b2b2b !important;
+  background: #1a1a1a !important;
   color: #fff !important;
-  padding: 6px !important;
+  padding: 10px !important;
+  font-size: 1rem !important;
 }
 
-/* Inline Editor */
 .inline-editor {
   padding: 4px 6px;
   border: 1px solid #cfcfcf;
@@ -483,7 +464,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   text-align: center;
 }
 
-/* Momentum Container */
 #seasonMapMomentumContainer {
   width: 100%;
   max-width: 1100px;
@@ -505,7 +485,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-size: 11px;
 }
 
-/* Responsive */
 @media (max-width: 900px) {
   .torbild-layout { flex-direction: column; height: auto; }
   .goalvalue-title-input { font-size: 0.85rem; }
