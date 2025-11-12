@@ -377,17 +377,160 @@ App.seasonTable = {
   },
   
   exportCSV() {
-    // Nutze die CSV-Handler Logik (bereits in csv-handler.js implementiert)
-    // Hier nur als Platzhalter - die vollständige Implementierung ist identisch zur Original-Version
-    alert("Season CSV Export - Implementierung in csv-handler.js");
-  },
-  
-  reset() {
-    if (!confirm("Season-Daten löschen?")) return;
-    
-    App.data.seasonData = {};
-    localStorage.removeItem("seasonData");
-    this.render();
-    alert("Season-Daten gelöscht.");
-  }
-};
+    try {
+      const names = Object.keys(App.data.seasonData || {});
+      if (!names.length) { 
+        alert("Keine Season-Daten vorhanden."); 
+        return; 
+      }
+
+      const header = [
+        "Nr","Spieler","Games",
+        "Goals","Assists","Points","+/-","Ø +/-",
+        "Shots","Shots/Game","Shots %","Goals/Game","Points/Game",
+        "Penalty","Goal Value","FaceOffs","FaceOffs Won","FaceOffs %","Time",
+        "MVP","MVP Points"
+      ];
+      const rows = [header];
+      const tempRows = [];
+
+      names.forEach(name => {
+        const d = App.data.seasonData[name] || {};
+        const games = Number(d.games || 0);
+        const goals = Number(d.goals || 0);
+        const assists = Number(d.assists || 0);
+        const points = goals + assists;
+        const plusMinus = Number(d.plusMinus || 0);
+        const shots = Number(d.shots || 0);
+        const penalty = Number(d.penaltys || 0);
+        const faceOffs = Number(d.faceOffs || 0);
+        const faceOffsWon = Number(d.faceOffsWon || 0);
+        const faceOffsPercent = faceOffs ? Math.round((faceOffsWon / faceOffs) * 100) : 0;
+        const timeSeconds = Number(d.timeSeconds || 0);
+
+        const avgPlusMinus = games ? (plusMinus / games) : 0;
+        const shotsPerGame = games ? (shots / games) : 0;
+        const goalsPerGame = games ? (goals / games) : 0;
+        const pointsPerGame = games ? (points / games) : 0;
+        const shotsPercent = shots ? Math.round((goals / shots) * 100) : 0;
+
+        let goalValue = 0;
+        try {
+          if (App.goalValue && typeof App.goalValue.computeValueForPlayer === "function") {
+            goalValue = Number(App.goalValue.computeValueForPlayer(name) || 0);
+          } else {
+            goalValue = Number(d.goalValue || 0);
+          }
+        } catch {
+          goalValue = Number(d.goalValue || 0);
+        }
+
+        const assistsPerGame = games ? (assists / games) : 0;
+        const penaltyPerGame = games ? (penalty / games) : 0;
+        const gvNum = Number(goalValue || 0);
+        const mvpPointsNum = (
+          (assistsPerGame * 8) +
+          (avgPlusMinus * 0.5) +
+          (shotsPerGame * 0.5) +
+          (goalsPerGame + (games ? (gvNum / games) * 10 : 0)) -
+          (penaltyPerGame * 1.2)
+        );
+        const mvpPointsRounded = Number(mvpPointsNum.toFixed(1));
+
+        const row = [
+          d.num || "",
+          name,
+          games,
+          goals,
+          assists,
+          points,
+          plusMinus,
+          avgPlusMinus.toFixed(1),
+          shots,
+          shotsPerGame.toFixed(1),
+          `${shotsPercent}%`,
+          goalsPerGame.toFixed(1),
+          pointsPerGame.toFixed(1),
+          penalty,
+          goalValue,
+          faceOffs,
+          faceOffsWon,
+          `${faceOffsPercent}%`,
+          App.helpers.formatTimeMMSS(timeSeconds),
+          "",
+          mvpPointsRounded
+        ];
+        tempRows.push(row);
+      });
+
+      // MVP Ranking
+      const MVP_POINTS_IDX = header.indexOf("MVP Points");
+      const MVP_IDX = header.indexOf("MVP");
+      const allPoints = tempRows.map(r => Number(r[MVP_POINTS_IDX]) || 0);
+      const sortedDescUnique = [...new Set(allPoints.slice().sort((a,b) => b - a))];
+      function rankFor(val) {
+        const i = sortedDescUnique.indexOf(val);
+        return i === -1 ? "" : (i + 1);
+      }
+      tempRows.forEach(r => { 
+        r[MVP_IDX] = rankFor(Number(r[MVP_POINTS_IDX]) || 0); 
+      });
+
+      rows.push(...tempRows);
+
+      // Total Row
+      const count = tempRows.length;
+      if (count) {
+        const sums = {
+          games: 0, goals: 0, assists: 0, points: 0, plusMinus: 0,
+          shots: 0, penalty: 0, faceOffs: 0, faceOffsWon: 0, timeSeconds: 0
+        };
+
+        tempRows.forEach(r => {
+          sums.games += Number(r[2]) || 0;
+          sums.goals += Number(r[3]) || 0;
+          sums.assists += Number(r[4]) || 0;
+          sums.points += Number(r[5]) || 0;
+          sums.plusMinus += Number(r[6]) || 0;
+          sums.shots += Number(r[8]) || 0;
+          sums.penalty += Number(r[13]) || 0;
+          sums.faceOffs += Number(r[15]) || 0;
+          sums.faceOffsWon += Number(r[16]) || 0;
+          const t = r[18] || "00:00";
+          if (/^\d{2}:\d{2}$/.test(t)) {
+            const [mm, ss] = t.split(":").map(Number);
+            sums.timeSeconds += (mm * 60 + ss);
+          }
+        });
+
+        const avgShotsPercent = sums.shots ? Math.round((sums.goals / sums.shots) * 100) : 0;
+        const avgFacePercent = sums.faceOffs ? Math.round((sums.faceOffsWon / sums.faceOffs) * 100) : 0;
+        const avgTime = Math.round(sums.timeSeconds / count);
+
+        const totalRow = [
+          "", "Total Ø",
+          (sums.games / count).toFixed(1),
+          (sums.goals / count).toFixed(1),
+          (sums.assists / count).toFixed(1),
+          (sums.points / count).toFixed(1),
+          (sums.plusMinus / count).toFixed(1),
+          (sums.plusMinus / count).toFixed(1),
+          (sums.shots / count).toFixed(1),
+          ((sums.shots / count) / ((sums.games / count) || 1)).toFixed(1),
+          `${avgShotsPercent}%`,
+          ((sums.goals / count) / ((sums.games / count) || 1)).toFixed(1),
+          ((sums.points / count) / ((sums.games / count) || 1)).toFixed(1),
+          (sums.penalty / count).toFixed(1),
+          "",
+          (sums.faceOffs / count).toFixed(1),
+          (sums.faceOffsWon / count).toFixed(1),
+          `${avgFacePercent}%`,
+          App.helpers.formatTimeMMSS(avgTime),
+          "",
+          ""
+        ];
+        rows.push(totalRow);
+      }
+
+      const csv = rows.map(r => r.join(](#)*
+
