@@ -519,3 +519,26 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   .top-bar { gap: 6px; }
   .top-btn, .import-csv-btn { min-width: 120px; }
 }
+/* SEASON PAGE - GANZ LINKS */
+#seasonContainer {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+#seasonContainer .table-scroll {
+  display: inline-block !important;
+  text-align: left !important;
+  margin: 0 !important;
+}
+
+#seasonPage table {
+  width: auto !important;
+  table-layout: auto !important;
+  margin: 0 !important;
+  float: left !important;
+  clear: left !important;
+}
