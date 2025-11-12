@@ -46,7 +46,6 @@ App.seasonTable = {
     table.style.borderCollapse = "separate";
     table.style.borderSpacing = "0";
     
-    // Header mit Sortierung
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
     
@@ -68,11 +67,11 @@ App.seasonTable = {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Body
     const tbody = document.createElement("tbody");
     
-    // Berechne Season-Daten
-    App.goalValue?.ensureDataForSeason();
+    if (App.goalValue && typeof App.goalValue.ensureDataForSeason === 'function') {
+      App.goalValue.ensureDataForSeason();
+    }
     
     const rows = Object.keys(App.data.seasonData).map(name => {
       const d = App.data.seasonData[name];
@@ -96,7 +95,11 @@ App.seasonTable = {
       
       let goalValue = "";
       try {
-        goalValue = App.goalValue?.computeValueForPlayer(d.name) || Number(d.goalValue || 0);
+        if (App.goalValue && typeof App.goalValue.computeValueForPlayer === 'function') {
+          goalValue = App.goalValue.computeValueForPlayer(d.name) || Number(d.goalValue || 0);
+        } else {
+          goalValue = Number(d.goalValue || 0);
+        }
       } catch (e) {
         goalValue = Number(d.goalValue || 0);
       }
@@ -126,14 +129,14 @@ App.seasonTable = {
         Number(avgPlusMinus.toFixed(1)),
         shots,
         Number(shotsPerGame.toFixed(1)),
-        `${shotsPercent}%`,
+        String(shotsPercent) + "%",
         Number(goalsPerGame.toFixed(1)),
         Number(pointsPerGame.toFixed(1)),
         penalty,
         goalValue,
         faceOffs,
         faceOffsWon,
-        `${faceOffPercent}%`,
+        String(faceOffPercent) + "%",
         App.helpers.formatTimeMMSS(timeSeconds),
         "",
         ""
@@ -142,17 +145,18 @@ App.seasonTable = {
       return {
         name: d.name,
         num: d.num || "",
-        cells,
+        cells: cells,
         raw: { games, goals, assists, points, plusMinus, shots, penalty, faceOffs, faceOffsWon, faceOffPercent, timeSeconds, goalValue },
-        mvpPointsRounded
+        mvpPointsRounded: mvpPointsRounded
       };
     });
     
-    // MVP Ranking
     const sortedByMvp = rows.slice().sort((a, b) => (b.mvpPointsRounded || 0) - (a.mvpPointsRounded || 0));
     const uniqueScores = [...new Set(sortedByMvp.map(r => r.mvpPointsRounded))];
     const scoreToRank = {};
-    uniqueScores.forEach((s, idx) => { scoreToRank[s] = idx + 1; });
+    uniqueScores.forEach((s, idx) => { 
+      scoreToRank[s] = idx + 1; 
+    });
     
     rows.forEach(r => {
       const mvpIdx = headerCols.length - 2;
@@ -161,7 +165,6 @@ App.seasonTable = {
       r.cells[mvpPointsIdx] = Number(r.mvpPointsRounded.toFixed(1));
     });
     
-    // Sortierung
     let displayRows = rows.slice();
     if (this.sortState.index === null) {
       displayRows.sort((a, b) => (b.raw.points || 0) - (a.raw.points || 0));
@@ -179,7 +182,6 @@ App.seasonTable = {
       });
     }
     
-    // Rows rendern
     displayRows.forEach(r => {
       const tr = document.createElement("tr");
       r.cells.forEach((c, cellIdx) => {
@@ -194,7 +196,6 @@ App.seasonTable = {
       tbody.appendChild(tr);
     });
     
-    // Total Row
     const colors = App.helpers.getColorStyles();
     headerRow.querySelectorAll("th").forEach(th => {
       th.style.background = colors.headerBg;
@@ -238,14 +239,14 @@ App.seasonTable = {
       totalCells[7] = (sums.plusMinus / count).toFixed(1);
       totalCells[8] = (sums.shots / count).toFixed(1);
       totalCells[9] = ((sums.shots / count) / ((sums.games / count) || 1)).toFixed(1);
-      totalCells[10] = `${avgShotsPercent}%`;
+      totalCells[10] = String(avgShotsPercent) + "%";
       totalCells[11] = ((sums.goals / count) / ((sums.games / count) || 1)).toFixed(1);
       totalCells[12] = ((sums.points / count) / ((sums.games / count) || 1)).toFixed(1);
       totalCells[13] = (sums.penalty / count).toFixed(1);
       totalCells[14] = "";
       totalCells[15] = (sums.faceOffs / count).toFixed(1);
       totalCells[16] = (sums.faceOffsWon / count).toFixed(1);
-      totalCells[17] = `${avgFacePercent}%`;
+      totalCells[17] = String(avgFacePercent) + "%";
       totalCells[18] = App.helpers.formatTimeMMSS(avgTime);
       totalCells[19] = "";
       totalCells[20] = "";
@@ -278,7 +279,6 @@ App.seasonTable = {
     
     this.container.appendChild(wrapper);
     
-    // Sort-Handler
     this.updateSortUI(table);
     table.querySelectorAll("th.sortable").forEach(th => {
       th.addEventListener("click", () => {
@@ -324,7 +324,7 @@ App.seasonTable = {
       if (!App.data.seasonData[name]) {
         App.data.seasonData[name] = {
           num: p.num || "",
-          name,
+          name: name,
           games: 0,
           goals: 0,
           assists: 0,
@@ -351,7 +351,11 @@ App.seasonTable = {
       sd.num = p.num || sd.num || "";
       
       try {
-        sd.goalValue = App.goalValue?.computeValueForPlayer(name) || sd.goalValue || 0;
+        if (App.goalValue && typeof App.goalValue.computeValueForPlayer === 'function') {
+          sd.goalValue = App.goalValue.computeValueForPlayer(name) || sd.goalValue || 0;
+        } else {
+          sd.goalValue = sd.goalValue || 0;
+        }
       } catch (e) {
         sd.goalValue = sd.goalValue || 0;
       }
@@ -364,15 +368,21 @@ App.seasonTable = {
       App.data.selectedPlayers.forEach(p => {
         const name = p.name;
         if (!App.data.statsData[name]) App.data.statsData[name] = {};
-        App.data.categories.forEach(c => { App.data.statsData[name][c] = 0; });
+        App.data.categories.forEach(c => { 
+          App.data.statsData[name][c] = 0; 
+        });
         App.data.playerTimes[name] = 0;
       });
       App.storage.saveStatsData();
       App.storage.savePlayerTimes();
-      App.statsTable?.render();
+      if (App.statsTable && typeof App.statsTable.render === 'function') {
+        App.statsTable.render();
+      }
     }
     
-    App.showPage("season");
+    if (typeof App.showPage === 'function') {
+      App.showPage("season");
+    }
     this.render();
   },
   
@@ -448,14 +458,14 @@ App.seasonTable = {
           avgPlusMinus.toFixed(1),
           shots,
           shotsPerGame.toFixed(1),
-          `${shotsPercent}%`,
+          String(shotsPercent) + "%",
           goalsPerGame.toFixed(1),
           pointsPerGame.toFixed(1),
           penalty,
           goalValue,
           faceOffs,
           faceOffsWon,
-          `${faceOffsPercent}%`,
+          String(faceOffsPercent) + "%",
           App.helpers.formatTimeMMSS(timeSeconds),
           "",
           mvpPointsRounded
@@ -463,22 +473,22 @@ App.seasonTable = {
         tempRows.push(row);
       });
 
-      // MVP Ranking
       const MVP_POINTS_IDX = header.indexOf("MVP Points");
       const MVP_IDX = header.indexOf("MVP");
       const allPoints = tempRows.map(r => Number(r[MVP_POINTS_IDX]) || 0);
       const sortedDescUnique = [...new Set(allPoints.slice().sort((a,b) => b - a))];
+      
       function rankFor(val) {
         const i = sortedDescUnique.indexOf(val);
         return i === -1 ? "" : (i + 1);
       }
+      
       tempRows.forEach(r => { 
         r[MVP_IDX] = rankFor(Number(r[MVP_POINTS_IDX]) || 0); 
       });
 
       rows.push(...tempRows);
 
-      // Total Row
       const count = tempRows.length;
       if (count) {
         const sums = {
@@ -498,7 +508,9 @@ App.seasonTable = {
           sums.faceOffsWon += Number(r[16]) || 0;
           const t = r[18] || "00:00";
           if (/^\d{2}:\d{2}$/.test(t)) {
-            const [mm, ss] = t.split(":").map(Number);
+            const parts = t.split(":");
+            const mm = Number(parts[0]) || 0;
+            const ss = Number(parts[1]) || 0;
             sums.timeSeconds += (mm * 60 + ss);
           }
         });
@@ -517,14 +529,14 @@ App.seasonTable = {
           (sums.plusMinus / count).toFixed(1),
           (sums.shots / count).toFixed(1),
           ((sums.shots / count) / ((sums.games / count) || 1)).toFixed(1),
-          `${avgShotsPercent}%`,
+          String(avgShotsPercent) + "%",
           ((sums.goals / count) / ((sums.games / count) || 1)).toFixed(1),
           ((sums.points / count) / ((sums.games / count) || 1)).toFixed(1),
           (sums.penalty / count).toFixed(1),
           "",
           (sums.faceOffs / count).toFixed(1),
           (sums.faceOffsWon / count).toFixed(1),
-          `${avgFacePercent}%`,
+          String(avgFacePercent) + "%",
           App.helpers.formatTimeMMSS(avgTime),
           "",
           ""
@@ -532,5 +544,26 @@ App.seasonTable = {
         rows.push(totalRow);
       }
 
-      const csv = rows.map(r => r.join(](#)*
-
+      const csv = rows.map(r => r.join(";")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "season.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      alert("Season CSV exportiert.");
+    } catch(e) {
+      console.error("Season CSV Export fehlgeschlagen:", e);
+      alert("Fehler beim Season-Export (siehe Konsole).");
+    }
+  },
+  
+  reset() {
+    if (!confirm("Season-Daten löschen?")) return;
+    
+    App.data.seasonData = {};
+    localStorage.removeItem("seasonData");
+    this.render();
+    alert("Season-Daten gelöscht.");
+  }
+};
