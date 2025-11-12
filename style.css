@@ -314,24 +314,29 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .period-buttons.bottom-row .time-btn:hover { background-color: #ffd3d3; }
 .time-btn:active { transform: scale(1.05); }
 
-/* SEASON PAGE - LINKSBÜNDIG */
-#seasonContainer {
-  display: flex !important;
-  justify-content: flex-start !important;
-  align-items: flex-start !important;
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-  overflow-x: auto !important;
+/* SEASON PAGE - GANZ AN DEN LINKEN RAND */
+#seasonPage {
+  width: 100%;
+  max-width: 100vw;
 }
 
-#seasonPage table { 
-  width: auto !important; 
-  table-layout: auto !important; 
-  border-collapse: collapse !important; 
-  font-size: 0.95rem !important; 
+#seasonContainer {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: auto !important;
+  padding: 0 !important;
   margin: 0 !important;
-  margin-left: 0 !important;
-  margin-right: auto !important;
+  margin-left: -20px !important; /* Kompensiert body padding */
+  padding-left: 8px !important;
+}
+
+#seasonPage table {
+  width: auto !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+  font-size: 0.95rem !important;
+  margin: 0 !important;
 }
 
 #seasonPage th, #seasonPage td {
@@ -393,6 +398,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   padding: 6px 4px !important;
 }
 
+/* Erste Spalte (Spielername) - KEINE Trennlinien */
 .goal-value-table th:first-child,
 .goal-value-table td:first-child {
   text-align: left !important;
@@ -401,6 +407,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  border-bottom: none !important; /* KEINE TRENNLINIEN */
 }
 
 .goal-value-table td {
@@ -412,6 +419,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .goal-value-table tbody tr:last-child td:first-child {
   background: var(--header-bg);
   border-right: 1px solid #333;
+  border-bottom: none !important;
 }
 
 .goalvalue-title-input {
@@ -518,27 +526,8 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   .goalvalue-title-input { font-size: 0.85rem; }
   .top-bar { gap: 6px; }
   .top-btn, .import-csv-btn { min-width: 120px; }
-}
-/* SEASON PAGE - GANZ LINKS */
-#seasonContainer {
-  display: block !important;
-  width: 100% !important;
-  overflow-x: auto !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  text-align: left !important;
-}
-
-#seasonContainer .table-scroll {
-  display: inline-block !important;
-  text-align: left !important;
-  margin: 0 !important;
-}
-
-#seasonPage table {
-  width: auto !important;
-  table-layout: auto !important;
-  margin: 0 !important;
-  float: left !important;
-  clear: left !important;
+  
+  #seasonContainer {
+    margin-left: -20px !important;
+  }
 }
