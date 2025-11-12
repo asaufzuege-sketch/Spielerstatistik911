@@ -90,6 +90,7 @@ App.goalValue = {
     
     const table = document.createElement("table");
     table.className = "goalvalue-table";
+    table.dataset.originalRender = "true"; // Markierung für Patch-Script
     
     // Header
     const thead = document.createElement("thead");
@@ -145,47 +146,12 @@ App.goalValue = {
         const td = document.createElement("td");
         td.dataset.player = name;
         td.dataset.opp = String(i);
+        td.dataset.clickable = "true"; // Markierung
         const v = Number(vals[i] || 0);
         td.textContent = String(v);
         td.style.color = v > 0 ? colors.pos : v < 0 ? colors.neg : colors.zero;
         td.style.cursor = "pointer";
-        
-        let lastClickTime = 0;
-        const DOUBLE_CLICK_THRESHOLD = 300;
-        
-        // Single Click: +1, Dblclick: -1
-        td.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          const now = Date.now();
-          const timeSinceLastClick = now - lastClickTime;
-          
-          const d = this.getData();
-          if (!d[name]) d[name] = opponents.map(() => 0);
-          
-          if (timeSinceLastClick < DOUBLE_CLICK_THRESHOLD) {
-            // Doppelklick: -1
-            d[name][i] = Math.max(0, Number(d[name][i] || 0) - 1);
-            lastClickTime = 0;
-          } else {
-            // Einzelklick: +1
-            d[name][i] = Number(d[name][i] || 0) + 1;
-            lastClickTime = now;
-          }
-          
-          this.setData(d);
-          
-          const nv = d[name][i];
-          td.textContent = nv;
-          td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
-          
-          const vc = valueCellMap[name];
-          if (vc) {
-            const val = this.computeValueForPlayer(name);
-            vc.textContent = this.formatValueNumber(val);
-            vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
-            vc.style.fontWeight = val !== 0 ? "700" : "400";
-          }
-        });
+        td.style.userSelect = "none";
         
         row.appendChild(td);
       });
@@ -261,6 +227,59 @@ App.goalValue = {
     wrapper.appendChild(table);
     
     this.container.appendChild(wrapper);
+    
+    // NACH Render: Delegierte Event-Listener für Click-Handling
+    this.attachClickHandlers(table, valueCellMap, opponents.length);
+  },
+  
+  attachClickHandlers(table, valueCellMap, oppCount) {
+    const colors = App.helpers.getColorStyles();
+    let lastClickTime = 0;
+    let lastClickedCell = null;
+    const DOUBLE_CLICK_MS = 300;
+    
+    // Delegierter Event-Listener auf Tabelle
+    table.addEventListener('mousedown', (e) => {
+      const td = e.target.closest('td[data-clickable="true"]');
+      if (!td) return;
+      
+      e.preventDefault();
+      
+      const playerName = td.dataset.player;
+      const oppIdx = Number(td.dataset.opp);
+      const now = Date.now();
+      
+      const d = this.getData();
+      if (!d[playerName]) d[playerName] = Array(oppCount).fill(0);
+      
+      // Doppelklick-Erkennung
+      if (lastClickedCell === td && (now - lastClickTime) < DOUBLE_CLICK_MS) {
+        // Doppelklick: -1
+        d[playerName][oppIdx] = Math.max(0, Number(d[playerName][oppIdx] || 0) - 1);
+        lastClickTime = 0;
+        lastClickedCell = null;
+      } else {
+        // Einzelklick: +1
+        d[playerName][oppIdx] = Number(d[playerName][oppIdx] || 0) + 1;
+        lastClickTime = now;
+        lastClickedCell = td;
+      }
+      
+      this.setData(d);
+      
+      const nv = d[playerName][oppIdx];
+      td.textContent = nv;
+      td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
+      
+      // Update Value-Spalte
+      const vc = valueCellMap[playerName];
+      if (vc) {
+        const val = this.computeValueForPlayer(playerName);
+        vc.textContent = this.formatValueNumber(val);
+        vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
+        vc.style.fontWeight = val !== 0 ? "700" : "400";
+      }
+    });
   },
   
   reset() {
