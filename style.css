@@ -314,7 +314,26 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .period-buttons.bottom-row .time-btn:hover { background-color: #ffd3d3; }
 .time-btn:active { transform: scale(1.05); }
 
-#seasonPage table { width: auto; table-layout: auto; border-collapse: collapse; font-size: 0.95rem; margin: 0; }
+/* SEASON PAGE - LINKSBÜNDIG */
+#seasonContainer {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  overflow-x: auto !important;
+}
+
+#seasonPage table { 
+  width: auto !important; 
+  table-layout: auto !important; 
+  border-collapse: collapse !important; 
+  font-size: 0.95rem !important; 
+  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
 #seasonPage th, #seasonPage td {
   padding: 8px 6px;
   text-align: center;
@@ -416,7 +435,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   touch-action: manipulation;
 }
 
-/* DROPDOWN - BLEIBT OFFEN */
 .gv-scale-dropdown {
   width: 75px !important;
   min-width: 75px !important;
@@ -453,6 +471,16 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   color: #fff !important;
   padding: 10px !important;
   font-size: 1rem !important;
+}
+
+.gv-scale {
+  cursor: pointer;
+  color: #fff;
+  background: rgba(0,0,0,0.35);
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: inline-block;
+  font-weight: 700;
 }
 
 .inline-editor {
