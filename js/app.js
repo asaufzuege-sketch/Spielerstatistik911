@@ -16,20 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     seasonMap: document.getElementById("seasonMapPage")
   };
   
-  // 3. Daten aus LocalStorage laden
-  App.storage.load();
-  
-  // 4. Alle Module initialisieren
-  App.timer.init();
-  App.csvHandler.init();
-  App.playerSelection.init();
-  App.statsTable.init();
-  App.seasonTable.init();
-  App.goalMap.init();
-  App.seasonMap.init();
-  App.goalValue.init();
-  
-  // 5. Page Navigation Setup
+  // 3. WICHTIG: App.showPage SOFORT definieren (vor Module Init!)
   App.showPage = function(page) {
     try {
       Object.values(App.pages).forEach(p => {
@@ -55,16 +42,29 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Render bei Seitenwechsel
       setTimeout(() => {
-        if (page === "stats") App.statsTable?.render();
-        if (page === "season") App.seasonTable?.render();
-        if (page === "goalValue") App.goalValue?.render();
-        if (page === "seasonMap") App.seasonMap?.render();
+        if (page === "stats" && App.statsTable) App.statsTable.render();
+        if (page === "season" && App.seasonTable) App.seasonTable.render();
+        if (page === "goalValue" && App.goalValue) App.goalValue.render();
+        if (page === "seasonMap" && App.seasonMap) App.seasonMap.render();
       }, 60);
       
     } catch (err) {
       console.warn("showPage failed:", err);
     }
   };
+  
+  // 4. Daten aus LocalStorage laden
+  App.storage.load();
+  
+  // 5. Alle Module initialisieren (NACH App.showPage Definition!)
+  App.timer.init();
+  App.csvHandler.init();
+  App.playerSelection.init();
+  App.statsTable.init();
+  App.seasonTable.init();
+  App.goalMap.init();
+  App.seasonMap.init();
+  App.goalValue.init();
   
   // 6. Navigation Event Listeners
   document.getElementById("selectPlayersBtn")?.addEventListener("click", () => {
@@ -139,9 +139,11 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       App.storage.saveAll();
       localStorage.setItem("timerSeconds", String(App.timer.seconds));
-      localStorage.setItem("goalValueOpponents", JSON.stringify(App.goalValue.getOpponents()));
-      localStorage.setItem("goalValueData", JSON.stringify(App.goalValue.getData()));
-      localStorage.setItem("goalValueBottom", JSON.stringify(App.goalValue.getBottom()));
+      if (App.goalValue) {
+        localStorage.setItem("goalValueOpponents", JSON.stringify(App.goalValue.getOpponents()));
+        localStorage.setItem("goalValueData", JSON.stringify(App.goalValue.getData()));
+        localStorage.setItem("goalValueBottom", JSON.stringify(App.goalValue.getBottom()));
+      }
     } catch (e) {
       console.warn("Save on unload failed:", e);
     }
