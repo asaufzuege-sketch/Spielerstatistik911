@@ -1,9 +1,4 @@
 // season_table_ui_patch.js
-// - Verschiebt "MVP Points" und "MVP" ans Ende der Season-Tabelle (MVP zuletzt).
-// - Macht die Goal Value Tabelle gestreift wie andere Tabellen.
-// - Entfernt dropdown-only Eingaben: Klick = +1 (cycle bei bottom scale), Doppelklick = Inline-Number-Editor.
-// - Schreibt Änderungen zurück in vorhandene app-Helper (getGoalValueData / setGoalValueData / getGoalValueBottom / setGoalValueBottom).
-// - Läuft nach DOMContentLoaded und reagiert auf Neurendering (MutationObserver).
 (function () {
   'use strict';
 
@@ -73,8 +68,6 @@
     const tbody = table.tBodies[0];
     if (!tbody) return;
 
-    // create snapshot of original header texts (before moves) to identify which column to move per row
-    // We'll attempt to detect moved header via matching text in the pre-move snapshot; if snapshot isn't available, fallback by counting columns
     const snapshot = headerTextArray.slice();
 
     const moveColumnByHeaderText = (token) => {
@@ -97,9 +90,9 @@
             const meta = (c.getAttribute('data-col')||c.getAttribute('aria-label')||'').toLowerCase();
             return meta && meta.includes(token);
           });
-            if (candidate) row.appendChild(candidate);
-          }
-        });
+          if (candidate) row.appendChild(candidate);
+        }
+      });
     };
 
     if (idxMvpPoints !== -1) moveColumnByHeaderText('mvp points');
@@ -122,6 +115,10 @@
 
     // Add a class for CSS styling if not present
     table.classList.add('goal-value-table');
+    
+    // Remove hover highlight by adding a flag
+    table.style.setProperty('--hover-disabled', '1');
+    
     // Apply alternating row classes for existing rows
     Array.from(table.tBodies[0].rows).forEach((row, i) => {
       row.classList.remove('odd-row','even-row');
@@ -230,77 +227,56 @@
       }
     });
 
-    // Replace bottomRow select elements with clickable spans (for scale)
-    // bottomRow cells: first cell is label, middle cells are selects, last cell empty
+    // Replace bottomRow: Remove "Skala" label and replace click/touch with dropdown
     const bottomCells = Array.from(bottomRow.cells);
+    
+    // First cell: Remove "Skala" text
+    if (bottomCells[0]) {
+      bottomCells[0].textContent = "";
+    }
+    
     bottomCells.forEach((td, idx) => {
       // skip first label cell and last value cell
       if (idx === 0 || idx === bottomCells.length - 1) return;
       const sel = td.querySelector('select');
       const curVal = sel ? (sel.value || goalValueOptions[0]) : (td.textContent || goalValueOptions[0]);
       td.innerHTML = '';
-      const span = document.createElement('span');
-      span.className = 'gv-scale';
-      span.style.display = 'inline-block';
-      span.style.minWidth = '56px';
-      span.style.textAlign = 'center';
-      span.style.fontWeight = '700';
-      span.textContent = String(curVal);
-      td.appendChild(span);
-
-      // click: cycle through goalValueOptions
-      span.addEventListener('click', () => {
-        let i = goalValueOptions.indexOf(String(span.textContent));
-        if (i === -1) i = 0;
-        i = (i + 1) % goalValueOptions.length;
-        const nv = goalValueOptions[i];
-        span.textContent = nv;
-        // persist in storage bottom array at position (idx-1)
+      
+      // Create dropdown
+      const select = document.createElement('select');
+      select.className = 'gv-scale-dropdown';
+      select.style.width = '60px';
+      select.style.padding = '4px';
+      select.style.borderRadius = '6px';
+      select.style.border = '1px solid #444';
+      select.style.background = 'rgba(0,0,0,0.15)';
+      select.style.color = '#fff';
+      select.style.fontWeight = '700';
+      select.style.textAlign = 'center';
+      select.style.cursor = 'pointer';
+      
+      goalValueOptions.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        if (opt === String(curVal)) option.selected = true;
+        select.appendChild(option);
+      });
+      
+      td.appendChild(select);
+      
+      select.addEventListener('change', () => {
+        const nv = Number(select.value);
         const bottom = safeGetGoalValueBottom();
         while (bottom.length < oppCount) bottom.push(0);
-        bottom[idx - 1] = Number(nv);
+        bottom[idx - 1] = nv;
         safeSetGoalValueBottom(bottom);
+        
         // update all computed cells
         rows.slice(0, rows.length - 1).forEach(r => {
           const pname = (r.cells[0] && r.cells[0].textContent) ? r.cells[0].textContent.trim() : '';
           const computedCell = r.cells[r.cells.length - 1];
           updateComputedCell(pname, computedCell);
-        });
-      });
-
-      // dblclick: inline number editor for precise set
-      span.addEventListener('dblclick', (ev) => {
-        ev.preventDefault();
-        if (td.querySelector('input.inline-editor')) return;
-        const cur = span.textContent || '0';
-        const inp = document.createElement('input');
-        inp.type = 'number';
-        inp.className = 'inline-editor';
-        inp.value = String(cur);
-        inp.style.minWidth = '56px';
-        td.innerHTML = '';
-        td.appendChild(inp);
-        inp.focus(); inp.select();
-        const commit = () => {
-          const nv = Number(inp.value) || 0;
-          td.innerHTML = '';
-          span.textContent = String(nv);
-          td.appendChild(span);
-          const bottom = safeGetGoalValueBottom();
-          while (bottom.length < oppCount) bottom.push(0);
-          bottom[idx - 1] = nv;
-          safeSetGoalValueBottom(bottom);
-          rows.slice(0, rows.length - 1).forEach(r => {
-            const pname = (r.cells[0] && r.cells[0].textContent) ? r.cells[0].textContent.trim() : '';
-            const computedCell = r.cells[r.cells.length - 1];
-            updateComputedCell(pname, computedCell);
-          });
-        };
-        const cancel = () => { td.innerHTML = ''; td.appendChild(span); };
-        inp.addEventListener('blur', commit);
-        inp.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') commit();
-          else if (e.key === 'Escape') cancel();
         });
       });
     });
