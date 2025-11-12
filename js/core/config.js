@@ -126,3 +126,77 @@ const App = {
     document.head.appendChild(style);
   }
 };
+  // ... bestehender Code bleibt ...
+  
+  injectTableStyles() {
+    // ... bestehende Funktion ...
+  }  // ← Hier endet die bestehende config.js
+  
+  ,  // ← KOMMA HINZUFÜGEN, dann neue Funktion anhängen:
+  
+  // NEUE FUNKTION: showPage (sofort verfügbar!)
+  showPage(page) {
+    try {
+      // Lazy-initialize pages wenn noch nicht geschehen
+      if (!this.pages || Object.keys(this.pages).length === 0) {
+        this.pages = {
+          selection: document.getElementById("playerSelectionPage"),
+          stats: document.getElementById("statsPage"),
+          torbild: document.getElementById("torbildPage"),
+          goalValue: document.getElementById("goalValuePage"),
+          season: document.getElementById("seasonPage"),
+          seasonMap: document.getElementById("seasonMapPage")
+        };
+      }
+      
+      // Alle Seiten verstecken
+      Object.values(this.pages).forEach(p => {
+        if (p) p.style.display = "none";
+      });
+      
+      // Target-Seite anzeigen
+      if (this.pages[page]) {
+        this.pages[page].style.display = "block";
+      }
+      
+      // Page in LocalStorage speichern
+      if (this.storage && typeof this.storage.setCurrentPage === 'function') {
+        this.storage.setCurrentPage(page);
+      } else {
+        try {
+          localStorage.setItem("currentPage", page);
+        } catch (e) {}
+      }
+      
+      // Update Title
+      const titles = {
+        selection: "Spielerauswahl",
+        stats: "Statistiken",
+        torbild: "Goal Map",
+        goalValue: "Goal Value",
+        season: "Season",
+        seasonMap: "Season Map"
+      };
+      document.title = titles[page] || "Spielerstatistik";
+      
+      // Render bei Seitenwechsel
+      setTimeout(() => {
+        if (page === "stats" && this.statsTable && typeof this.statsTable.render === 'function') {
+          this.statsTable.render();
+        }
+        if (page === "season" && this.seasonTable && typeof this.seasonTable.render === 'function') {
+          this.seasonTable.render();
+        }
+        if (page === "goalValue" && this.goalValue && typeof this.goalValue.render === 'function') {
+          this.goalValue.render();
+        }
+        if (page === "seasonMap" && this.seasonMap && typeof this.seasonMap.render === 'function') {
+          this.seasonMap.render();
+        }
+      }, 60);
+      
+    } catch (err) {
+      console.error("App.showPage failed:", err);
+    }
+  }
+};  // ← Schließt das App-Objekt
