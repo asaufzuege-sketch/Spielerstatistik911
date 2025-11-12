@@ -21,14 +21,12 @@ App.playerSelection = {
     
     this.container.innerHTML = "";
     
-    // Sortiere Spieler nach Nummer
     const sortedPlayers = App.data.players.slice().sort((a, b) => {
       const na = Number(a.num) || 999;
       const nb = Number(b.num) || 999;
       return na - nb;
     });
     
-    // Rendere reguläre Spieler
     sortedPlayers.forEach((p, idx) => {
       const li = document.createElement("li");
       const checkboxId = `player-chk-${idx}`;
@@ -52,7 +50,6 @@ App.playerSelection = {
       this.container.appendChild(li);
     });
     
-    // Rendere Custom-Spieler Slots (5 Stück)
     const customSelected = App.data.selectedPlayers.filter(sp => 
       !App.data.players.some(bp => bp.name === sp.name)
     );
@@ -76,7 +73,6 @@ App.playerSelection = {
     try {
       App.data.selectedPlayers = [];
       
-      // Sammle reguläre Spieler
       const checkedBoxes = Array.from(this.container.querySelectorAll("input[type='checkbox']:not(.custom-checkbox)"))
         .filter(chk => chk.checked);
       
@@ -95,10 +91,9 @@ App.playerSelection = {
           }
         }
         
-        App.data.selectedPlayers.push({ num: num || "", name });
+        App.data.selectedPlayers.push({ num: num || "", name: name });
       });
       
-      // Sammle Custom-Spieler
       const customLis = Array.from(this.container.querySelectorAll("li")).slice(App.data.players.length);
       customLis.forEach(li => {
         const chk = li.querySelector(".custom-checkbox");
@@ -113,7 +108,6 @@ App.playerSelection = {
         }
       });
       
-      // Speichere und initialisiere Stats-Daten
       App.storage.saveSelectedPlayers();
       
       App.data.selectedPlayers.forEach(p => {
@@ -129,9 +123,19 @@ App.playerSelection = {
       
       App.storage.saveStatsData();
       
-      // Wechsle zur Stats-Seite
-      App.showPage("stats");
-      App.statsTable?.render();
+      // KORRIGIERT: Prüfe ob App.showPage existiert
+      if (typeof App.showPage === 'function') {
+        App.showPage("stats");
+      } else {
+        console.warn("App.showPage ist noch nicht definiert");
+        // Fallback: Direkt die Seiten umschalten
+        document.getElementById("playerSelectionPage").style.display = "none";
+        document.getElementById("statsPage").style.display = "block";
+      }
+      
+      if (App.statsTable && typeof App.statsTable.render === 'function') {
+        App.statsTable.render();
+      }
       
     } catch (err) {
       console.error("Error in confirmSelection:", err);
