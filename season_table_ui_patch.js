@@ -107,8 +107,9 @@
     table.classList.add('goal-value-table');
     table.style.setProperty('--hover-disabled', '1');
     
-    // Auto-width für Namensspalte
-    table.style.tableLayout = 'auto';
+    // WICHTIG: table-layout fixed damit Spalten kontrollierbar sind
+    table.style.tableLayout = 'fixed';
+    table.style.width = '100%';
     
     Array.from(table.tBodies[0].rows).forEach((row, i) => {
       row.classList.remove('odd-row','even-row');
@@ -139,15 +140,55 @@
       if (cellEl) cellEl.textContent = (Math.abs(val - Math.round(val)) < 0.0001) ? String(Math.round(val)) : String(Number(val.toFixed(1)));
     };
 
-    // Player rows - Click = +2, Dblclick = -1
+    // Berechne maximale Namenslänge für optimale Spaltenbreite
+    let maxNameLength = 0;
+    rows.slice(0, rows.length - 1).forEach(row => {
+      const nameCell = row.cells[0];
+      if (nameCell) {
+        const len = (nameCell.textContent || '').trim().length;
+        if (len > maxNameLength) maxNameLength = len;
+      }
+    });
+    
+    // Dynamische Breite: 8px pro Zeichen + Padding
+    const nameColWidth = Math.max(120, Math.min(250, maxNameLength * 9 + 24));
+    
+    // Setze col-group für fixe Spaltenbreiten
+    let colgroup = table.querySelector('colgroup');
+    if (!colgroup) {
+      colgroup = document.createElement('colgroup');
+      table.insertBefore(colgroup, table.firstChild);
+    }
+    colgroup.innerHTML = '';
+    
+    // Erste Spalte: dynamisch basierend auf Namen
+    const col1 = document.createElement('col');
+    col1.style.width = `${nameColWidth}px`;
+    colgroup.appendChild(col1);
+    
+    // Opponent-Spalten: je 80px
+    for (let i = 0; i < oppCount; i++) {
+      const col = document.createElement('col');
+      col.style.width = '80px';
+      colgroup.appendChild(col);
+    }
+    
+    // Value-Spalte: 90px
+    const colValue = document.createElement('col');
+    colValue.style.width = '90px';
+    colgroup.appendChild(colValue);
+
+    // Player rows - Click = +3, Dblclick = -1
     rows.slice(0, rows.length - 1).forEach(row => {
       const nameCell = row.cells[0];
       const playerName = (nameCell && nameCell.textContent) ? nameCell.textContent.trim() : '';
       
-      // Namensspalte: white-space normal, damit lange Namen umbrechen können
+      // Namensspalte: nowrap damit kein Umbruch
       if (nameCell) {
-        nameCell.style.whiteSpace = 'normal';
-        nameCell.style.wordWrap = 'break-word';
+        nameCell.style.whiteSpace = 'nowrap';
+        nameCell.style.overflow = 'hidden';
+        nameCell.style.textOverflow = 'ellipsis';
+        nameCell.title = playerName; // Tooltip für lange Namen
       }
       
       for (let ci = 1; ci <= oppCount; ci++) {
@@ -166,13 +207,13 @@
 
         let clickTimeout = null;
 
-        // Single Click: +2 (mit 200ms Debounce für Doppelklick-Erkennung)
+        // Single Click: +3 (mit 250ms Debounce für Doppelklick-Erkennung)
         span.addEventListener('click', (ev) => {
           ev.preventDefault();
           if (clickTimeout) clearTimeout(clickTimeout);
           clickTimeout = setTimeout(() => {
             let v = Number(span.textContent) || 0;
-            v = v + 2; // GEÄNDERT: +2 statt +1
+            v = v + 3; // GEÄNDERT: +3 statt +1
             span.textContent = String(v);
             const all = safeGetGoalValueData();
             if (!all[playerName]) all[playerName] = Array(oppCount).fill(0);
@@ -181,7 +222,7 @@
             const computedCell = row.cells[row.cells.length - 1];
             updateComputedCell(playerName, computedCell);
             clickTimeout = null;
-          }, 200);
+          }, 250);
         });
 
         // Double Click: -1
@@ -192,7 +233,7 @@
             clickTimeout = null;
           }
           let v = Number(span.textContent) || 0;
-          v = Math.max(0, v - 1); // GEÄNDERT: -1 und minimum 0
+          v = Math.max(0, v - 1); // -1 mit Minimum 0
           span.textContent = String(v);
           const all = safeGetGoalValueData();
           if (!all[playerName]) all[playerName] = Array(oppCount).fill(0);
@@ -204,7 +245,7 @@
       }
     });
 
-    // Bottom Row: Dropdown mit preventBlur Fix
+    // Bottom Row: Dropdown mit verbessertem Fix
     const bottomCells = Array.from(bottomRow.cells);
     
     if (bottomCells[0]) {
@@ -219,16 +260,23 @@
       
       const select = document.createElement('select');
       select.className = 'gv-scale-dropdown';
-      select.style.width = '70px';
-      select.style.padding = '6px 4px';
-      select.style.borderRadius = '6px';
-      select.style.border = '1px solid #444';
-      select.style.background = 'rgba(0,0,0,0.35)';
-      select.style.color = '#fff';
-      select.style.fontWeight = '700';
-      select.style.textAlign = 'center';
-      select.style.cursor = 'pointer';
-      select.style.fontSize = '0.9rem';
+      
+      // Inline-Styles für maximale Kompatibilität
+      select.style.cssText = `
+        width: 75px !important;
+        padding: 6px 4px !important;
+        border-radius: 6px !important;
+        border: 1px solid #444 !important;
+        background: rgba(0,0,0,0.35) !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        cursor: pointer !important;
+        font-size: 0.9rem !important;
+        -webkit-appearance: menulist !important;
+        -moz-appearance: menulist !important;
+        appearance: auto !important;
+      `;
       
       goalValueOptions.forEach(opt => {
         const option = document.createElement('option');
@@ -240,12 +288,21 @@
       
       td.appendChild(select);
       
-      // WICHTIG: mousedown verhindert blur bei Klick auf Option
+      // KRITISCHER FIX: Alle Events die Dropdown schließen könnten
+      let isChanging = false;
+      
       select.addEventListener('mousedown', (e) => {
         e.stopPropagation();
+        isChanging = true;
       });
       
-      select.addEventListener('change', () => {
+      select.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isChanging = true;
+      });
+      
+      select.addEventListener('change', (e) => {
+        e.stopPropagation();
         const nv = Number(select.value);
         const bottom = safeGetGoalValueBottom();
         while (bottom.length < oppCount) bottom.push(0);
@@ -258,17 +315,29 @@
           updateComputedCell(pname, computedCell);
         });
         
-        // Focus behalten
-        select.focus();
+        // Keep focus
+        setTimeout(() => {
+          select.blur();
+          isChanging = false;
+        }, 100);
       });
       
-      // Click außerhalb schließt Dropdown nicht (optional)
+      // Verhindere Blur während Änderung
       select.addEventListener('blur', (e) => {
-        // Verhindert ungewolltes Schließen
-        if (e.relatedTarget && e.relatedTarget.tagName === 'OPTION') {
+        if (isChanging) {
           e.preventDefault();
-          select.focus();
+          e.stopPropagation();
+          setTimeout(() => {
+            if (document.activeElement !== select) {
+              select.focus();
+            }
+          }, 50);
         }
+      });
+      
+      // Focus-Event
+      select.addEventListener('focus', (e) => {
+        e.stopPropagation();
       });
     });
 
