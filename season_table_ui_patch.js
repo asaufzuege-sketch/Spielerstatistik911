@@ -97,25 +97,19 @@
     });
   }
 
-  // Enhance Goal Value table
+  // Enhance Goal Value table - NUR STYLING, KEIN CLICK-HANDLING
   function enhanceGoalValueTable() {
     const container = document.getElementById('goalValueContainer');
     if (!container) return;
-    const table = container.querySelector('table.goalvalue-table');
+    const table = container.querySelector('table.goalvalue-table[data-original-render="true"]');
     if (!table) return;
 
-    if (table.dataset.enhanced === 'true') return;
-    table.dataset.enhanced = 'true';
+    if (table.dataset.styled === 'true') return;
+    table.dataset.styled = 'true';
 
     table.classList.add('goal-value-table');
-    table.style.setProperty('--hover-disabled', '1');
     table.style.tableLayout = 'fixed';
     table.style.width = '100%';
-    
-    Array.from(table.tBodies[0].rows).forEach((row, i) => {
-      row.classList.remove('odd-row','even-row');
-      row.classList.add((i % 2 === 0) ? 'even-row' : 'odd-row');
-    });
 
     const thead = table.tHead;
     const headerCells = thead ? Array.from(thead.rows[0].cells) : [];
@@ -127,14 +121,6 @@
     const rows = Array.from(tbody.rows);
     if (rows.length === 0) return;
     const bottomRow = rows[rows.length - 1];
-
-    let goalValueOptions = [];
-    for (let v = 0; v <= 10; v++) goalValueOptions.push((v*0.5).toFixed(1));
-
-    const updateComputedCell = (playerName, cellEl) => {
-      const val = safeComputeValueForPlayer(playerName);
-      if (cellEl) cellEl.textContent = (Math.abs(val - Math.round(val)) < 0.0001) ? String(Math.round(val)) : String(Number(val.toFixed(1)));
-    };
 
     let maxNameLength = 0;
     rows.slice(0, rows.length - 1).forEach(row => {
@@ -168,182 +154,58 @@
     colValue.style.width = '90px';
     colgroup.appendChild(colValue);
 
-    // Player rows - Click = +1, Dblclick = -1
+    // NUR STYLING - KEIN EVENT-HANDLING
     rows.slice(0, rows.length - 1).forEach(row => {
       const nameCell = row.cells[0];
-      const playerName = (nameCell && nameCell.textContent) ? nameCell.textContent.trim() : '';
-      
       if (nameCell) {
         nameCell.style.whiteSpace = 'nowrap';
         nameCell.style.overflow = 'hidden';
         nameCell.style.textOverflow = 'ellipsis';
-        nameCell.title = playerName;
-      }
-      
-      for (let ci = 1; ci <= oppCount; ci++) {
-        const td = row.cells[ci];
-        if (!td) continue;
-        
-        if (td.dataset.enhanced === 'true') continue;
-        td.dataset.enhanced = 'true';
-        
-        const input = td.querySelector('input');
-        const curVal = input ? (input.value || '0') : (td.textContent || '0');
-        td.innerHTML = '';
-        
-        const span = document.createElement('span');
-        span.className = 'gv-cell';
-        span.style.cssText = `
-          display: inline-block;
-          min-width: 56px;
-          text-align: center;
-          cursor: pointer;
-          user-select: none;
-          padding: 4px;
-        `;
-        span.textContent = String(curVal);
-        span.dataset.player = playerName;
-        span.dataset.oppIndex = String(ci - 1);
-        td.appendChild(span);
-
-        let lastClickTime = 0;
-        const DOUBLE_CLICK_THRESHOLD = 300;
-
-        // Click = +1, Dblclick = -1
-        span.addEventListener('mousedown', (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          
-          const now = Date.now();
-          const timeSinceLastClick = now - lastClickTime;
-          
-          let v = Number(span.textContent) || 0;
-          
-          if (timeSinceLastClick < DOUBLE_CLICK_THRESHOLD) {
-            // Doppelklick: -1
-            v = Math.max(0, v - 1);
-            lastClickTime = 0;
-          } else {
-            // Einzelklick: +1
-            v = v + 1;
-            lastClickTime = now;
-          }
-          
-          span.textContent = String(v);
-          
-          const all = safeGetGoalValueData();
-          if (!all[playerName]) all[playerName] = Array(oppCount).fill(0);
-          all[playerName][ci - 1] = v;
-          safeSetGoalValueData(all);
-          
-          const computedCell = row.cells[row.cells.length - 1];
-          updateComputedCell(playerName, computedCell);
-        });
-        
-        // Touch Support
-        let touchStartTime = 0;
-        span.addEventListener('touchstart', (ev) => {
-          ev.preventDefault();
-          const now = Date.now();
-          const timeSinceLastTouch = now - touchStartTime;
-          
-          let v = Number(span.textContent) || 0;
-          
-          if (timeSinceLastTouch < DOUBLE_CLICK_THRESHOLD) {
-            v = Math.max(0, v - 1);
-            touchStartTime = 0;
-          } else {
-            v = v + 1;
-            touchStartTime = now;
-          }
-          
-          span.textContent = String(v);
-          
-          const all = safeGetGoalValueData();
-          if (!all[playerName]) all[playerName] = Array(oppCount).fill(0);
-          all[playerName][ci - 1] = v;
-          safeSetGoalValueData(all);
-          
-          const computedCell = row.cells[row.cells.length - 1];
-          updateComputedCell(playerName, computedCell);
-        }, { passive: false });
       }
     });
 
-    // Bottom Row: Dropdown
+    // Bottom Row: Dropdown-Styling
     const bottomCells = Array.from(bottomRow.cells);
-    
-    if (bottomCells[0]) {
-      bottomCells[0].textContent = "";
-    }
     
     bottomCells.forEach((td, idx) => {
       if (idx === 0 || idx === bottomCells.length - 1) return;
       
-      if (td.dataset.enhanced === 'true') return;
-      td.dataset.enhanced = 'true';
+      const span = td.querySelector('.gv-scale');
+      if (!span) return;
       
-      const sel = td.querySelector('select');
-      const curVal = sel ? (sel.value || goalValueOptions[0]) : (td.textContent || goalValueOptions[0]);
-      td.innerHTML = '';
-      
+      // Ersetze Span mit Select
+      const curVal = span.textContent || '0';
       const select = document.createElement('select');
       select.className = 'gv-scale-dropdown';
-      select.dataset.cellIndex = String(idx);
       
-      select.style.cssText = `
-        width: 75px !important;
-        padding: 8px 4px !important;
-        border-radius: 6px !important;
-        border: 2px solid #555 !important;
-        background: rgba(30,30,30,0.95) !important;
-        color: #fff !important;
-        font-weight: 700 !important;
-        text-align: center !important;
-        cursor: pointer !important;
-        font-size: 1rem !important;
-        outline: none !important;
-      `;
+      const goalValueOptions = [];
+      for (let v = 0; v <= 10; v++) goalValueOptions.push((v*0.5).toFixed(1));
       
       goalValueOptions.forEach(opt => {
         const option = document.createElement('option');
         option.value = opt;
         option.textContent = opt;
-        option.style.cssText = 'background: #1a1a1a !important; color: #fff !important; padding: 8px !important;';
         if (opt === String(curVal)) option.selected = true;
         select.appendChild(option);
       });
       
+      td.innerHTML = '';
       td.appendChild(select);
       
-      select.addEventListener('change', (e) => {
-        e.stopPropagation();
+      const oppIdx = idx - 1;
+      
+      select.addEventListener('change', () => {
         const nv = Number(select.value);
         const bottom = safeGetGoalValueBottom();
-        while (bottom.length < oppCount) bottom.push(0);
-        bottom[idx - 1] = nv;
+        while (bottom.length <= oppIdx) bottom.push(0);
+        bottom[oppIdx] = nv;
         safeSetGoalValueBottom(bottom);
         
-        rows.slice(0, rows.length - 1).forEach(r => {
-          const pname = (r.cells[0] && r.cells[0].textContent) ? r.cells[0].textContent.trim() : '';
-          const computedCell = r.cells[r.cells.length - 1];
-          updateComputedCell(pname, computedCell);
-        });
+        // Trigger re-render durch Modul
+        if (App.goalValue && typeof App.goalValue.render === 'function') {
+          App.goalValue.render();
+        }
       });
-      
-      select.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-      });
-      
-      select.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    });
-
-    rows.slice(0, rows.length - 1).forEach(r => {
-      const pname = (r.cells[0] && r.cells[0].textContent) ? r.cells[0].textContent.trim() : '';
-      const computedCell = r.cells[r.cells.length - 1];
-      updateComputedCell(pname, computedCell);
     });
   }
 
