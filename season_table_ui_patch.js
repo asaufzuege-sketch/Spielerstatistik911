@@ -104,7 +104,6 @@
     const table = container.querySelector('table.goalvalue-table');
     if (!table) return;
 
-    // Markiere Tabelle als bereits bearbeitet
     if (table.dataset.enhanced === 'true') return;
     table.dataset.enhanced = 'true';
 
@@ -137,7 +136,6 @@
       if (cellEl) cellEl.textContent = (Math.abs(val - Math.round(val)) < 0.0001) ? String(Math.round(val)) : String(Number(val.toFixed(1)));
     };
 
-    // Berechne maximale Namenslänge
     let maxNameLength = 0;
     rows.slice(0, rows.length - 1).forEach(row => {
       const nameCell = row.cells[0];
@@ -170,7 +168,7 @@
     colValue.style.width = '90px';
     colgroup.appendChild(colValue);
 
-    // Player rows - VERBESSERTES CLICK-HANDLING
+    // Player rows - Click = +1, Dblclick = -1
     rows.slice(0, rows.length - 1).forEach(row => {
       const nameCell = row.cells[0];
       const playerName = (nameCell && nameCell.textContent) ? nameCell.textContent.trim() : '';
@@ -186,7 +184,6 @@
         const td = row.cells[ci];
         if (!td) continue;
         
-        // Überspringe bereits bearbeitete Zellen
         if (td.dataset.enhanced === 'true') continue;
         td.dataset.enhanced = 'true';
         
@@ -212,7 +209,7 @@
         let lastClickTime = 0;
         const DOUBLE_CLICK_THRESHOLD = 300;
 
-        // EINZIGER Event-Handler: mousedown (zuverlässiger als click)
+        // Click = +1, Dblclick = -1
         span.addEventListener('mousedown', (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
@@ -222,26 +219,23 @@
           
           let v = Number(span.textContent) || 0;
           
-          // Doppelklick-Erkennung
           if (timeSinceLastClick < DOUBLE_CLICK_THRESHOLD) {
             // Doppelklick: -1
             v = Math.max(0, v - 1);
-            lastClickTime = 0; // Reset für nächsten Klick
+            lastClickTime = 0;
           } else {
-            // Einzelklick: +3
-            v = v + 3;
+            // Einzelklick: +1
+            v = v + 1;
             lastClickTime = now;
           }
           
           span.textContent = String(v);
           
-          // Speichern
           const all = safeGetGoalValueData();
           if (!all[playerName]) all[playerName] = Array(oppCount).fill(0);
           all[playerName][ci - 1] = v;
           safeSetGoalValueData(all);
           
-          // Update computed value
           const computedCell = row.cells[row.cells.length - 1];
           updateComputedCell(playerName, computedCell);
         });
@@ -259,7 +253,7 @@
             v = Math.max(0, v - 1);
             touchStartTime = 0;
           } else {
-            v = v + 3;
+            v = v + 1;
             touchStartTime = now;
           }
           
@@ -276,7 +270,7 @@
       }
     });
 
-    // Bottom Row: Dropdown - BLEIBT OFFEN BIS AUSWAHL
+    // Bottom Row: Dropdown
     const bottomCells = Array.from(bottomRow.cells);
     
     if (bottomCells[0]) {
@@ -286,7 +280,6 @@
     bottomCells.forEach((td, idx) => {
       if (idx === 0 || idx === bottomCells.length - 1) return;
       
-      // Überspringe bereits bearbeitete Zellen
       if (td.dataset.enhanced === 'true') return;
       td.dataset.enhanced = 'true';
       
@@ -323,7 +316,6 @@
       
       td.appendChild(select);
       
-      // KRITISCH: Nur change-Event, kein blur/focus
       select.addEventListener('change', (e) => {
         e.stopPropagation();
         const nv = Number(select.value);
@@ -332,7 +324,6 @@
         bottom[idx - 1] = nv;
         safeSetGoalValueBottom(bottom);
         
-        // Update alle computed cells
         rows.slice(0, rows.length - 1).forEach(r => {
           const pname = (r.cells[0] && r.cells[0].textContent) ? r.cells[0].textContent.trim() : '';
           const computedCell = r.cells[r.cells.length - 1];
@@ -340,7 +331,6 @@
         });
       });
       
-      // Verhindere ungewolltes Schließen
       select.addEventListener('mousedown', (e) => {
         e.stopPropagation();
       });
@@ -350,7 +340,6 @@
       });
     });
 
-    // Initial update computed values
     rows.slice(0, rows.length - 1).forEach(r => {
       const pname = (r.cells[0] && r.cells[0].textContent) ? r.cells[0].textContent.trim() : '';
       const computedCell = r.cells[r.cells.length - 1];
