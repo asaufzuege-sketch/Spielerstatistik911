@@ -124,17 +124,9 @@ const App = {
       }
     `;
     document.head.appendChild(style);
-  }
-};
-  // ... bestehender Code bleibt ...
+  },
   
-  injectTableStyles() {
-    // ... bestehende Funktion ...
-  }  // ← Hier endet die bestehende config.js
-  
-  ,  // ← KOMMA HINZUFÜGEN, dann neue Funktion anhängen:
-  
-  // NEUE FUNKTION: showPage (sofort verfügbar!)
+  // Page Navigation (sofort verfügbar!)
   showPage(page) {
     try {
       // Lazy-initialize pages wenn noch nicht geschehen
@@ -199,4 +191,4 @@ const App = {
       console.error("App.showPage failed:", err);
     }
   }
-};  // ← Schließt das App-Objekt
+};
