@@ -422,3 +422,65 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   .top-bar { gap: 6px; }
   .top-btn, .import-csv-btn { min-width: 120px; } /* etwas schmaler mobil */
 }
+/* ========================================
+   GOAL VALUE TABLE VERBESSERUNGEN
+   ======================================== */
+
+/* Entfernt die helle Hover-Markierung */
+.goal-value-table tbody tr:hover {
+  background: inherit !important;
+}
+
+/* Opponent Input-Felder schmaler */
+.goalvalue-title-input {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 4px 6px;
+  color: inherit;
+  text-align: center;
+  max-width: 100px; /* Begrenzt Breite */
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.85rem; /* Kleinere Schrift */
+}
+
+/* Goal Value Header-Zellen */
+.goal-value-table th {
+  padding: 6px 4px !important; /* Weniger Padding horizontal */
+  max-width: 110px; /* Begrenzt Spaltenbreite */
+}
+
+/* Dropdown für Skala-Zeile */
+.gv-scale-dropdown {
+  width: 60px !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  border: 1px solid #444 !important;
+  background: rgba(0,0,0,0.35) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  font-size: 0.9rem !important;
+}
+
+.gv-scale-dropdown:hover {
+  background: rgba(0,0,0,0.5) !important;
+}
+
+.gv-scale-dropdown:focus {
+  outline: 2px solid #00ff80;
+  outline-offset: 2px;
+}
+
+/* Goal Value Tabelle kompakter */
+.goal-value-table td, .goal-value-table th {
+  padding: 6px 4px !important;
+}
+
+/* Bottom Row ohne "Skala" Label */
+.goal-value-table tbody tr:last-child td:first-child {
+  background: var(--header-bg);
+  border-right: 1px solid #333;
+}
