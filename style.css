@@ -137,7 +137,7 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  justify-content: center; /* GEÄNDERT: zentriert */
+  justify-content: center;
   padding: 8px 0;
   width: 100%;
   max-width: 900px;
@@ -145,7 +145,7 @@ h1 {
 
 #seasonPage .top-bar {
   gap: 12px;
-  justify-content: center; /* GEÄNDERT: zentriert */
+  justify-content: center;
 }
 
 /* Basis für alle Buttons (inkl. Import) */
@@ -367,7 +367,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 13px;
   margin-top: 6px;
-  table-layout: auto; /* GEÄNDERT: auto statt fixed */
+  table-layout: fixed; /* WICHTIG: fixed für kontrollierte Spaltenbreiten */
 }
 
 .goal-value-table tbody tr:nth-child(odd) { background: var(--row-odd); }
@@ -381,19 +381,17 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 /* Goal Value Header-Zellen */
 .goal-value-table th {
   padding: 6px 4px !important;
-  max-width: 110px;
 }
 
-/* Erste Spalte (Spielername) - Auto-Width */
+/* Erste Spalte (Spielername) - Dynamisch aber OHNE Umbruch */
 .goal-value-table th:first-child,
 .goal-value-table td:first-child {
-  width: auto !important;
-  min-width: 120px;
-  max-width: none !important;
-  white-space: normal !important;
-  word-wrap: break-word !important;
   text-align: left !important;
   padding-left: 12px !important;
+  padding-right: 8px !important;
+  white-space: nowrap !important; /* KEIN Umbruch */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important; /* ... bei zu langen Namen */
 }
 
 /* Goal Value Body-Zellen */
@@ -430,30 +428,49 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   user-select: none; 
 }
 
-/* Dropdown für Skala-Zeile */
+/* Dropdown für Skala-Zeile - VERBESSERTER FIX */
 .gv-scale-dropdown {
-  width: 70px !important;
+  width: 75px !important;
+  min-width: 75px !important;
   padding: 6px 4px !important;
   border-radius: 6px !important;
   border: 1px solid #444 !important;
-  background: rgba(0,0,0,0.35) !important;
+  background: rgba(0,0,0,0.45) !important;
   color: #fff !important;
   font-weight: 700 !important;
   text-align: center !important;
+  text-align-last: center !important;
   cursor: pointer !important;
   font-size: 0.9rem !important;
-  appearance: auto !important; /* WICHTIG: native Dropdown-Pfeile */
   -webkit-appearance: menulist !important;
   -moz-appearance: menulist !important;
+  appearance: menulist !important;
+  outline: none !important;
+  position: relative !important;
+  z-index: 100 !important;
 }
 
 .gv-scale-dropdown:hover {
-  background: rgba(0,0,0,0.5) !important;
+  background: rgba(0,0,0,0.6) !important;
+  border-color: #666 !important;
 }
 
 .gv-scale-dropdown:focus {
-  outline: 2px solid #00ff80;
-  outline-offset: 2px;
+  outline: 2px solid #00ff80 !important;
+  outline-offset: 1px !important;
+  border-color: #00ff80 !important;
+  z-index: 200 !important;
+}
+
+.gv-scale-dropdown:active {
+  background: rgba(0,0,0,0.7) !important;
+}
+
+/* Dropdown Options */
+.gv-scale-dropdown option {
+  background: #2b2b2b !important;
+  color: #fff !important;
+  padding: 6px !important;
 }
 
 /* Inline Editor */
