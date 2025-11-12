@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Spielerstatistik</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- NEU: optionale Styles für Goal Value Tabelle -->
   <link rel="stylesheet" href="Create%20season_table_styles.css" />
-  <!-- jsPDF (UMD) für PDF-Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
@@ -32,12 +30,9 @@
         <button id="seasonBtn" class="top-btn season-highlight">Season</button>
         <button id="seasonMapBtn" class="top-btn season-highlight">Season Map</button>
         <button id="exportBtn" class="top-btn export-csv">Export CSV</button>
-
-        <!-- AOD-Button (schwarz, wird bei ON heller) -->
         <button id="displayWakeLockBtn" class="top-btn" style="background:#000000;color:#ffffff;min-width:64px;font-weight:700;margin:0 6px;">
           AOD
         </button>
-
         <button id="resetBtn" class="top-btn danger-btn reset-btn">Reset</button>
       </div>
     </div>
@@ -215,7 +210,6 @@
               <button class="time-btn">0</button>
             </div>
           </div>
-          <!-- weitere Perioden analog -->
         </div>
       </div>
     </div>
@@ -225,11 +219,8 @@
   <div id="seasonPage" class="page" style="display:none;">
     <div class="page-top">
       <div class="top-bar">
-        <!-- Order: Zurück, Export CSV, Import CSV, Reset -->
         <button id="backToStatsFromSeasonBtn" class="top-btn">← Zurück</button>
         <button id="exportSeasonBtn" class="top-btn export-csv">Export CSV</button>
-        <!-- Include Import CSV here (app.js will not duplicate if it also tries to create it) -->
-        <button id="importCsvSeasonBtn" class="top-btn import-csv-btn">Import CSV</button>
         <button id="resetSeasonBtn" class="top-btn danger-btn reset-btn">Reset</button>
       </div>
     </div>
@@ -238,15 +229,32 @@
     <div id="seasonContainer"></div>
   </div>
 
-  <script src="app.js"></script>
-  <!-- NEU: Patch für Season-Tabelle und Goal-Value-UI -->
+  <!-- Scripts in korrekter Reihenfolge -->
+  <!-- 1. Core -->
+  <script src="js/core/config.js"></script>
+  <script src="js/core/helpers.js"></script>
+  
+  <!-- 2. Utils -->
+  <script src="js/utils/storage.js"></script>
+  <script src="js/utils/marker-handler.js"></script>
+  
+  <!-- 3. Module -->
+  <script src="js/modules/timer.js"></script>
+  <script src="js/modules/csv-handler.js"></script>
+  <script src="js/modules/player-selection.js"></script>
+  <script src="js/modules/stats-table.js"></script>
+  <script src="js/modules/season-table.js"></script>
+  <script src="js/modules/goal-map.js"></script>
+  <script src="js/modules/season-map.js"></script>
+  <script src="js/modules/goal-value.js"></script>
+  
+  <!-- 4. Haupt-Init -->
+  <script src="js/app.js"></script>
+  
+  <!-- 5. Patches & Enhancements -->
   <script src="season_table_ui_patch.js"></script>
   <script src="season_map_momentum.js"></script>
-
-  <!-- html2canvas for capturing momentum area (used by export) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-  <!-- enhancements: wakelock / NoSleep fallback (uses the existing #displayWakeLockBtn) -->
   <script src="enhancements-wakelock.js"></script>
 </body>
 </html>
