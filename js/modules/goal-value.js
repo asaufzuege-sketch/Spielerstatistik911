@@ -150,41 +150,28 @@ App.goalValue = {
         td.style.color = v > 0 ? colors.pos : v < 0 ? colors.neg : colors.zero;
         td.style.cursor = "pointer";
         
-        let clickTimeout = null;
+        let lastClickTime = 0;
+        const DOUBLE_CLICK_THRESHOLD = 300;
         
-        td.addEventListener("click", () => {
-          if (clickTimeout) clearTimeout(clickTimeout);
-          clickTimeout = setTimeout(() => {
-            const d = this.getData();
-            if (!d[name]) d[name] = opponents.map(() => 0);
-            d[name][i] = Math.max(0, Number(d[name][i] || 0) + 1);
-            this.setData(d);
-            
-            const nv = d[name][i];
-            td.textContent = nv;
-            td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
-            
-            const vc = valueCellMap[name];
-            if (vc) {
-              const val = this.computeValueForPlayer(name);
-              vc.textContent = this.formatValueNumber(val);
-              vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
-              vc.style.fontWeight = val !== 0 ? "700" : "400";
-            }
-            clickTimeout = null;
-          }, 200);
-        });
-        
-        td.addEventListener("dblclick", (e) => {
-          e.preventDefault();
-          if (clickTimeout) {
-            clearTimeout(clickTimeout);
-            clickTimeout = null;
-          }
+        // Single Click: +1, Dblclick: -1
+        td.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          const now = Date.now();
+          const timeSinceLastClick = now - lastClickTime;
           
           const d = this.getData();
           if (!d[name]) d[name] = opponents.map(() => 0);
-          d[name][i] = Math.max(0, Number(d[name][i] || 0) - 1);
+          
+          if (timeSinceLastClick < DOUBLE_CLICK_THRESHOLD) {
+            // Doppelklick: -1
+            d[name][i] = Math.max(0, Number(d[name][i] || 0) - 1);
+            lastClickTime = 0;
+          } else {
+            // Einzelklick: +1
+            d[name][i] = Number(d[name][i] || 0) + 1;
+            lastClickTime = now;
+          }
+          
           this.setData(d);
           
           const nv = d[name][i];
@@ -219,7 +206,7 @@ App.goalValue = {
     bottomRow.className = (playersList.length % 2 === 0 ? "even-row" : "odd-row");
     
     const labelTd = document.createElement("td");
-    labelTd.textContent = "Skala";
+    labelTd.textContent = "";
     labelTd.style.fontWeight = "700";
     bottomRow.appendChild(labelTd);
     
