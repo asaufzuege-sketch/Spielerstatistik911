@@ -16,47 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
     seasonMap: document.getElementById("seasonMapPage")
   };
   
-  // 3. WICHTIG: App.showPage SOFORT definieren (vor Module Init!)
-  App.showPage = function(page) {
-    try {
-      Object.values(App.pages).forEach(p => {
-        if (p) p.style.display = "none";
-      });
-      
-      if (App.pages[page]) {
-        App.pages[page].style.display = "block";
-      }
-      
-      App.storage.setCurrentPage(page);
-      
-      // Update Title
-      const titles = {
-        selection: "Spielerauswahl",
-        stats: "Statistiken",
-        torbild: "Goal Map",
-        goalValue: "Goal Value",
-        season: "Season",
-        seasonMap: "Season Map"
-      };
-      document.title = titles[page] || "Spielerstatistik";
-      
-      // Render bei Seitenwechsel
-      setTimeout(() => {
-        if (page === "stats" && App.statsTable) App.statsTable.render();
-        if (page === "season" && App.seasonTable) App.seasonTable.render();
-        if (page === "goalValue" && App.goalValue) App.goalValue.render();
-        if (page === "seasonMap" && App.seasonMap) App.seasonMap.render();
-      }, 60);
-      
-    } catch (err) {
-      console.warn("showPage failed:", err);
-    }
-  };
-  
-  // 4. Daten aus LocalStorage laden
+  // 3. Daten aus LocalStorage laden
   App.storage.load();
   
-  // 5. Alle Module initialisieren (NACH App.showPage Definition!)
+  // 4. Alle Module initialisieren
   App.timer.init();
   App.csvHandler.init();
   App.playerSelection.init();
@@ -66,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   App.seasonMap.init();
   App.goalValue.init();
   
-  // 6. Navigation Event Listeners
+  // 5. Navigation Event Listeners
   document.getElementById("selectPlayersBtn")?.addEventListener("click", () => {
     App.showPage("selection");
   });
@@ -103,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     App.showPage("seasonMap");
   });
   
-  // 7. Delegierte Back-Button Handler
+  // 6. Delegierte Back-Button Handler
   document.addEventListener("click", (e) => {
     try {
       const btn = e.target.closest("button");
@@ -126,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, true);
   
-  // 8. Initiale Seite anzeigen
+  // 7. Initiale Seite anzeigen
   const lastPage = App.storage.getCurrentPage();
   const initialPage = lastPage === "selection" || !App.data.selectedPlayers.length 
     ? "selection" 
@@ -134,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   App.showPage(initialPage);
   
-  // 9. Daten vor Seitenabschluss speichern
+  // 8. Daten vor Seitenabschluss speichern
   window.addEventListener("beforeunload", () => {
     try {
       App.storage.saveAll();
