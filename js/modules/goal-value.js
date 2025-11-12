@@ -1,11 +1,11 @@
 // Goal Value Modul
 App.goalValue = {
   container: null,
+  clickTimers: {}, // Pro Zelle einen Timer
   
   init() {
     this.container = document.getElementById("goalValueContainer");
     
-    // Event Listeners
     document.getElementById("resetGoalValueBtn")?.addEventListener("click", () => {
       this.reset();
     });
@@ -89,10 +89,8 @@ App.goalValue = {
       : App.data.selectedPlayers.map(p => p.name);
     
     const table = document.createElement("table");
-    table.className = "goalvalue-table";
-    table.dataset.originalRender = "true";
+    table.className = "goalvalue-table gv-no-patch";
     
-    // Header
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
     
@@ -124,7 +122,6 @@ App.goalValue = {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Body
     const tbody = document.createElement("tbody");
     const valueCellMap = {};
     const colors = App.helpers.getColorStyles();
@@ -134,10 +131,8 @@ App.goalValue = {
       row.className = (rowIdx % 2 === 0 ? "even-row" : "odd-row");
       
       const tdName = document.createElement("td");
+      tdName.className = "gv-name-cell";
       tdName.textContent = name;
-      tdName.style.textAlign = "left";
-      tdName.style.fontWeight = "700";
-      tdName.style.borderBottom = "none"; // KEINE Trennlinie
       row.appendChild(tdName);
       
       const vals = (gData[name] && Array.isArray(gData[name])) ? gData[name].slice() : opponents.map(() => 0);
@@ -145,19 +140,66 @@ App.goalValue = {
       
       opponents.forEach((_, i) => {
         const td = document.createElement("td");
+        const cellId = `${name}-${i}`;
+        td.dataset.cellId = cellId;
         td.dataset.player = name;
-        td.dataset.opp = String(i);
-        td.dataset.clickable = "true";
+        td.dataset.oppIdx = String(i);
+        td.className = "gv-data-cell";
+        
         const v = Number(vals[i] || 0);
         td.textContent = String(v);
         td.style.color = v > 0 ? colors.pos : v < 0 ? colors.neg : colors.zero;
-        td.style.cursor = "pointer";
-        td.style.userSelect = "none";
+        
+        // EINFACHER Click-Handler: NUR click-Event
+        td.addEventListener("click", (e) => {
+          e.preventDefault();
+          
+          const cellId = td.dataset.cellId;
+          const playerName = td.dataset.player;
+          const oppIdx = Number(td.dataset.oppIdx);
+          
+          // Wenn Timer läuft = Doppelklick
+          if (this.clickTimers[cellId]) {
+            clearTimeout(this.clickTimers[cellId]);
+            delete this.clickTimers[cellId];
+            
+            // DOPPELKLICK: -1
+            const d = this.getData();
+            if (!d[playerName]) d[playerName] = opponents.map(() => 0);
+            d[playerName][oppIdx] = Math.max(0, Number(d[playerName][oppIdx] || 0) - 1);
+            this.setData(d);
+            
+            const nv = d[playerName][oppIdx];
+            td.textContent = String(nv);
+            td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
+            
+            this.updateValueCell(playerName, valueCellMap);
+            
+          } else {
+            // ERSTER KLICK: Timer starten
+            this.clickTimers[cellId] = setTimeout(() => {
+              delete this.clickTimers[cellId];
+              
+              // EINZELKLICK: +1
+              const d = this.getData();
+              if (!d[playerName]) d[playerName] = opponents.map(() => 0);
+              d[playerName][oppIdx] = Number(d[playerName][oppIdx] || 0) + 1;
+              this.setData(d);
+              
+              const nv = d[playerName][oppIdx];
+              td.textContent = String(nv);
+              td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
+              
+              this.updateValueCell(playerName, valueCellMap);
+            }, 300);
+          }
+        });
         
         row.appendChild(td);
       });
       
       const valueTd = document.createElement("td");
+      valueTd.className = "gv-value-cell";
       const val = this.computeValueForPlayer(name);
       valueTd.textContent = this.formatValueNumber(val);
       valueTd.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
@@ -173,9 +215,8 @@ App.goalValue = {
     bottomRow.className = (playersList.length % 2 === 0 ? "even-row" : "odd-row");
     
     const labelTd = document.createElement("td");
+    labelTd.className = "gv-name-cell";
     labelTd.textContent = "";
-    labelTd.style.fontWeight = "700";
-    labelTd.style.borderBottom = "none"; // KEINE Trennlinie
     bottomRow.appendChild(labelTd);
     
     const scaleOptions = [];
@@ -191,7 +232,6 @@ App.goalValue = {
       const span = document.createElement("span");
       span.className = "gv-scale";
       span.textContent = String(storedBottom[i]);
-      span.style.cursor = "pointer";
       
       span.addEventListener("click", () => {
         const arr = this.getBottom();
@@ -203,11 +243,7 @@ App.goalValue = {
         this.setBottom(arr);
         
         Object.keys(valueCellMap).forEach(pn => {
-          const cell = valueCellMap[pn];
-          const newVal = this.computeValueForPlayer(pn);
-          cell.textContent = this.formatValueNumber(newVal);
-          cell.style.color = newVal > 0 ? colors.pos : newVal < 0 ? colors.neg : colors.zero;
-          cell.style.fontWeight = newVal !== 0 ? "700" : "400";
+          this.updateValueCell(pn, valueCellMap);
         });
       });
       
@@ -224,92 +260,20 @@ App.goalValue = {
     
     const wrapper = document.createElement('div');
     wrapper.className = 'table-scroll';
-    wrapper.style.width = '100%';
-    wrapper.style.boxSizing = 'border-box';
     wrapper.appendChild(table);
     
     this.container.appendChild(wrapper);
-    
-    // NACH Render: Click-Handler mit verbessertem Doppelklick
-    this.attachClickHandlers(table, valueCellMap, opponents.length);
   },
   
-  attachClickHandlers(table, valueCellMap, oppCount) {
-    const colors = App.helpers.getColorStyles();
-    const clickState = new Map(); // Pro Zelle eigenen State
+  updateValueCell(playerName, valueCellMap) {
+    const vc = valueCellMap[playerName];
+    if (!vc) return;
     
-    // Delegierter Event-Listener
-    table.addEventListener('mousedown', (e) => {
-      const td = e.target.closest('td[data-clickable="true"]');
-      if (!td) return;
-      
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const playerName = td.dataset.player;
-      const oppIdx = Number(td.dataset.opp);
-      const cellKey = `${playerName}-${oppIdx}`;
-      const now = Date.now();
-      
-      const d = this.getData();
-      if (!d[playerName]) d[playerName] = Array(oppCount).fill(0);
-      
-      // Hole State für diese Zelle
-      const state = clickState.get(cellKey) || { lastTime: 0, clicks: 0 };
-      const timeSinceLastClick = now - state.lastTime;
-      
-      // Reset nach 400ms
-      if (timeSinceLastClick > 400) {
-        state.clicks = 0;
-      }
-      
-      state.clicks++;
-      state.lastTime = now;
-      clickState.set(cellKey, state);
-      
-      // Entscheide: +1 oder -1
-      if (state.clicks === 2) {
-        // Zweiter Klick innerhalb 400ms = Doppelklick = -1
-        d[playerName][oppIdx] = Math.max(0, Number(d[playerName][oppIdx] || 0) - 1);
-        state.clicks = 0; // Reset für nächsten Zyklus
-      } else {
-        // Erster Klick = +1
-        setTimeout(() => {
-          const currentState = clickState.get(cellKey);
-          if (currentState && currentState.clicks === 1) {
-            // War nur Einzelklick
-            d[playerName][oppIdx] = Number(d[playerName][oppIdx] || 0) + 1;
-            this.setData(d);
-            
-            const nv = d[playerName][oppIdx];
-            td.textContent = nv;
-            td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
-            
-            const vc = valueCellMap[playerName];
-            if (vc) {
-              const val = this.computeValueForPlayer(playerName);
-              vc.textContent = this.formatValueNumber(val);
-              vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
-              vc.style.fontWeight = val !== 0 ? "700" : "400";
-            }
-          }
-        }, 400);
-      }
-      
-      this.setData(d);
-      
-      const nv = d[playerName][oppIdx];
-      td.textContent = nv;
-      td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
-      
-      const vc = valueCellMap[playerName];
-      if (vc) {
-        const val = this.computeValueForPlayer(playerName);
-        vc.textContent = this.formatValueNumber(val);
-        vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
-        vc.style.fontWeight = val !== 0 ? "700" : "400";
-      }
-    });
+    const colors = App.helpers.getColorStyles();
+    const val = this.computeValueForPlayer(playerName);
+    vc.textContent = this.formatValueNumber(val);
+    vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
+    vc.style.fontWeight = val !== 0 ? "700" : "400";
   },
   
   reset() {
