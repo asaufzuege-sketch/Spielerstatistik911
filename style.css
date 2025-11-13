@@ -73,6 +73,7 @@ h1 {
   font-family: "Astroz", "Segoe UI", sans-serif;
   font-size: 1.69em;
   margin: 12px 0 12px 0;
+  text-align: center;
 }
 
 .center-text { text-align: center; color: #888; margin-top: 6px; }
@@ -136,19 +137,18 @@ h1 {
   justify-content: space-between !important;
   align-items: center !important;
   gap: clamp(6px, 1vw, 10px) !important;
-  overflow-x: hidden !important; /* Scrollbar entfernen */
+  overflow-x: hidden !important;
   padding: 8px 0 !important;
 }
 #statsPage .top-btn,
 #statsPage .import-csv-btn {
-  flex: 1 1 0 !important;                 /* gleiche Breite, darf schrumpfen */
-  min-width: 0 !important;                /* Schrumpfen erlauben */
-  white-space: nowrap !important;         /* kein Umbruch im Button-Text */
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
   font-size: clamp(0.80rem, 1.0vw, 0.95rem) !important;
   padding: clamp(6px, 0.9vw, 8px) clamp(8px, 1.4vw, 14px) !important;
   min-height: 40px !important;
 }
-/* Optional: Timer numerische Stabilität */
 #statsPage #timerBtn { font-variant-numeric: tabular-nums; }
 
 /* Season-Seite eigene Topbar */
@@ -340,19 +340,18 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 }
 
 #seasonPage h1 {
-  text-align: left;
-  padding-left: 4px;
-  margin-left: 0;
+  text-align: center;
+  margin: 12px 0;
 }
 
 #seasonPage .page-top {
-  align-items: flex-start;
-  padding-left: 4px;
-  margin-left: 0;
+  align-items: center;
+  margin: 0 auto;
 }
 
 #seasonContainer {
-  display: block !important;
+  display: flex !important;
+  justify-content: center !important;
   width: 100vw !important;
   max-width: 100vw !important;
   height: auto !important;
@@ -410,7 +409,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 #seasonPage th, #seasonPage td {
   padding: 8px 6px;
   text-align: center;
-  border-bottom: 1px solid #333;
+  border-bottom: none;
   color: var(--text-color);
   white-space: nowrap;
 }
@@ -424,9 +423,9 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   text-align: center;
 }
 #seasonPage thead th:nth-child(1), #seasonPage tbody td:nth-child(1) {
-  width: 36px;
-  min-width: 36px;
-  max-width: 36px;
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
   text-align: center;
 }
 #seasonPage thead th:nth-child(2), #seasonPage tbody td:nth-child(2) {
@@ -482,7 +481,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 /* Scroll-Wrapper */
 .table-scroll {
   width: 100% !important;
-  overflow-x: auto !important;   /* horizontal scroll */
+  overflow-x: auto !important;
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
 }
@@ -512,7 +511,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .goalvalue-table td {
   padding: 6px 4px !important;
   text-align: center;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: none;
 }
 
 /* Name Zellen */
