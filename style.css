@@ -449,7 +449,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 #goalValueContainer {
   width: 100% !important;
   max-width: 100% !important;
-  overflow-x: scroll !important;
+  overflow-x: auto !important;
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   padding-right: 20px !important;
@@ -481,7 +481,9 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 
 .table-scroll {
   width: 100% !important;
-  overflow: visible !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 /* GOAL VALUE TABLE */
