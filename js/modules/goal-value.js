@@ -1,4 +1,4 @@
-// Goal Value Modul
+// Goal Value Modul - MIT SCROLLING aus Repo 909
 App.goalValue = {
   container: null,
   clickTimers: {},
@@ -90,11 +90,12 @@ App.goalValue = {
     
     const table = document.createElement("table");
     table.className = "goalvalue-table gv-no-patch";
-    
-    // KRITISCH: Tabelle muss breit genug sein für Scrolling
-    table.style.width = 'max-content';
-    table.style.minWidth = '100%';
-    table.style.tableLayout = 'auto';
+    table.style.width = "auto";
+    table.style.margin = "0";
+    table.style.borderCollapse = "collapse";
+    table.style.borderRadius = "8px";
+    table.style.overflow = "hidden";
+    table.style.tableLayout = "auto";
     
     // Header
     const thead = document.createElement("thead");
@@ -102,21 +103,29 @@ App.goalValue = {
     
     const thPlayer = document.createElement("th");
     thPlayer.textContent = "Spieler";
-    thPlayer.className = "gv-name-header";
-    thPlayer.style.minWidth = '150px'; // Mindestbreite für Namen
+    thPlayer.style.textAlign = "center";
+    thPlayer.style.padding = "8px 6px";
+    thPlayer.style.borderBottom = "2px solid #333";
+    thPlayer.style.minWidth = "160px";
+    thPlayer.style.whiteSpace = "nowrap";
     headerRow.appendChild(thPlayer);
     
     opponents.forEach((op, idx) => {
       const th = document.createElement("th");
-      th.style.minWidth = '100px'; // Mindestbreite pro Opponent
+      th.style.padding = "6px";
+      th.style.borderBottom = "2px solid #333";
+      th.style.textAlign = "center";
       const input = document.createElement("input");
       input.type = "text";
-      input.value = op;
+      input.value = op || `Gegner ${idx+1}`;
       input.className = "goalvalue-title-input";
+      input.style.width = "100%";
+      input.style.boxSizing = "border-box";
+      input.style.textAlign = "center";
       input.addEventListener("change", () => {
-        const list = this.getOpponents();
-        list[idx] = input.value || `Gegner ${idx + 1}`;
-        this.setOpponents(list);
+        const arr = this.getOpponents();
+        arr[idx] = input.value || `Gegner ${idx+1}`;
+        this.setOpponents(arr);
         this.ensureDataForSeason();
         this.render();
       });
@@ -126,7 +135,9 @@ App.goalValue = {
     
     const thValue = document.createElement("th");
     thValue.textContent = "Value";
-    thValue.style.minWidth = '100px'; // Mindestbreite für Value
+    thValue.style.padding = "6px";
+    thValue.style.borderBottom = "2px solid #333";
+    thValue.style.textAlign = "center";
     headerRow.appendChild(thValue);
     
     thead.appendChild(headerRow);
@@ -140,12 +151,17 @@ App.goalValue = {
     playersList.forEach((name, rowIdx) => {
       const row = document.createElement("tr");
       row.className = (rowIdx % 2 === 0 ? "even-row" : "odd-row");
+      row.style.borderBottom = "1px solid #333";
       
       const tdName = document.createElement("td");
-      tdName.className = "gv-name-cell";
       tdName.textContent = name;
-      tdName.title = name;
-      tdName.style.minWidth = '150px';
+      tdName.style.textAlign = "left";
+      tdName.style.padding = "6px";
+      tdName.style.fontWeight = "700";
+      tdName.style.minWidth = "160px";
+      tdName.style.whiteSpace = "nowrap";
+      tdName.style.overflow = "visible";
+      tdName.style.textOverflow = "clip";
       row.appendChild(tdName);
       
       const vals = (gData[name] && Array.isArray(gData[name])) ? gData[name].slice() : opponents.map(() => 0);
@@ -153,9 +169,9 @@ App.goalValue = {
       
       opponents.forEach((_, i) => {
         const td = document.createElement("td");
-        td.style.minWidth = '100px'; // Mindestbreite pro Zelle
-        const cellId = `${name}-${i}`;
-        td.dataset.cellId = cellId;
+        td.style.padding = "6px";
+        td.style.textAlign = "center";
+        td.style.cursor = "pointer";
         td.dataset.player = name;
         td.dataset.oppIdx = String(i);
         td.className = "gv-data-cell";
@@ -163,11 +179,12 @@ App.goalValue = {
         const v = Number(vals[i] || 0);
         td.textContent = String(v);
         td.style.color = v > 0 ? colors.pos : v < 0 ? colors.neg : colors.zero;
+        td.style.fontWeight = v !== 0 ? "700" : "400";
         
         td.addEventListener("click", (e) => {
           e.preventDefault();
           
-          const cellId = td.dataset.cellId;
+          const cellId = `${name}-${i}`;
           const playerName = td.dataset.player;
           const oppIdx = Number(td.dataset.oppIdx);
           
@@ -184,6 +201,7 @@ App.goalValue = {
             const nv = d[playerName][oppIdx];
             td.textContent = String(nv);
             td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
+            td.style.fontWeight = nv !== 0 ? "700" : "400";
             
             this.updateValueCell(playerName, valueCellMap);
             
@@ -200,6 +218,7 @@ App.goalValue = {
               const nv = d[playerName][oppIdx];
               td.textContent = String(nv);
               td.style.color = nv > 0 ? colors.pos : nv < 0 ? colors.neg : colors.zero;
+              td.style.fontWeight = nv !== 0 ? "700" : "400";
               
               this.updateValueCell(playerName, valueCellMap);
             }, 300);
@@ -210,8 +229,8 @@ App.goalValue = {
       });
       
       const valueTd = document.createElement("td");
-      valueTd.className = "gv-value-cell";
-      valueTd.style.minWidth = '100px';
+      valueTd.style.padding = "6px";
+      valueTd.style.textAlign = "center";
       const val = this.computeValueForPlayer(name);
       valueTd.textContent = this.formatValueNumber(val);
       valueTd.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
@@ -222,14 +241,16 @@ App.goalValue = {
       tbody.appendChild(row);
     });
     
-    // Bottom Scale Row mit Dropdown
+    // Bottom Scale Row
     const bottomRow = document.createElement("tr");
     bottomRow.className = (playersList.length % 2 === 0 ? "even-row" : "odd-row");
+    bottomRow.style.background = "rgba(0,0,0,0.03)";
     
     const labelTd = document.createElement("td");
-    labelTd.className = "gv-name-cell";
     labelTd.textContent = "";
-    labelTd.style.minWidth = '150px';
+    labelTd.style.padding = "6px";
+    labelTd.style.fontWeight = "700";
+    labelTd.style.textAlign = "center";
     bottomRow.appendChild(labelTd);
     
     const scaleOptions = [];
@@ -242,103 +263,13 @@ App.goalValue = {
     
     opponents.forEach((_, i) => {
       const td = document.createElement("td");
-      td.style.minWidth = '100px';
+      td.style.padding = "6px";
+      td.style.textAlign = "center";
       
-      // DROPDOWN
       const select = document.createElement("select");
       select.className = "gv-scale-dropdown";
+      select.style.width = "80px";
       
       scaleOptions.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt;
-        option.textContent = opt;
-        if (opt === String(storedBottom[i])) option.selected = true;
-        select.appendChild(option);
-      });
-      
-      select.addEventListener("change", () => {
-        const arr = this.getBottom();
-        arr[i] = Number(select.value);
-        this.setBottom(arr);
-        
-        Object.keys(valueCellMap).forEach(pn => {
-          this.updateValueCell(pn, valueCellMap);
-        });
-      });
-      
-      td.appendChild(select);
-      bottomRow.appendChild(td);
-    });
-    
-    const emptyTd = document.createElement("td");
-    emptyTd.textContent = "";
-    emptyTd.style.minWidth = '100px';
-    bottomRow.appendChild(emptyTd);
-    
-    tbody.appendChild(bottomRow);
-    table.appendChild(tbody);
-    
-    const wrapper = document.createElement('div');
-    wrapper.className = 'table-scroll';
-    wrapper.appendChild(table);
-    
-    this.container.appendChild(wrapper);
-    
-    // Nach Render: Berechne tatsächliche Breite
-    setTimeout(() => {
-      const container = document.getElementById('goalValueContainer');
-      if (container && table) {
-        // Force overflow
-        container.style.overflowX = 'scroll';
-        
-        const tableWidth = table.offsetWidth;
-        const containerWidth = container.clientWidth;
-        const scrollWidth = container.scrollWidth;
-        
-        console.log('Goal Value Tabelle:', {
-          tableWidth: tableWidth,
-          containerWidth: containerWidth,
-          scrollWidth: scrollWidth,
-          isScrollable: scrollWidth > containerWidth,
-          opponentsCount: opponents.length,
-          expectedMinWidth: (150 + (opponents.length * 100) + 100) + 'px'
-        });
-        
-        // Wenn immer noch nicht scrollbar, erzwinge Mindestbreite
-        if (scrollWidth <= containerWidth) {
-          const minWidth = 150 + (opponents.length * 100) + 100;
-          table.style.minWidth = minWidth + 'px';
-          console.log('Force min-width:', minWidth + 'px');
-        }
-      }
-    }, 200);
-  },
-  
-  updateValueCell(playerName, valueCellMap) {
-    const vc = valueCellMap[playerName];
-    if (!vc) return;
-    
-    const colors = App.helpers.getColorStyles();
-    const val = this.computeValueForPlayer(playerName);
-    vc.textContent = this.formatValueNumber(val);
-    vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
-    vc.style.fontWeight = val !== 0 ? "700" : "400";
-  },
-  
-  reset() {
-    if (!confirm("Goal Value zurücksetzen?")) return;
-    
-    const opponents = this.getOpponents();
-    const playersList = Object.keys(App.data.seasonData).length 
-      ? Object.keys(App.data.seasonData) 
-      : App.data.selectedPlayers.map(p => p.name);
-    
-    const newData = {};
-    playersList.forEach(n => newData[n] = opponents.map(() => 0));
-    this.setData(newData);
-    this.setBottom(opponents.map(() => 0));
-    
-    this.render();
-    alert("Goal Value zurückgesetzt.");
-  }
-};
+        const option = document.createElement('*
+
