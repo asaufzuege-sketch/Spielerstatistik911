@@ -25,9 +25,9 @@ App.seasonTable = {
     
     this.container.innerHTML = "";
     this.container.style.display = 'flex';
-    this.container.style.justifyContent = 'flex-start';
+    this.container.style.justifyContent = 'center';
     this.container.style.alignItems = 'flex-start';
-    this.container.style.paddingLeft = '8px';
+    this.container.style.paddingLeft = '0';
     
     const headerCols = [
       "Nr", "Spieler", "Games",
