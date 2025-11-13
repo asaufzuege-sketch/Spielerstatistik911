@@ -6,7 +6,6 @@
   <title>Spielerstatistik</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="Create%20season_table_styles.css" />
-  <link rel="stylesheet" href="goal-value-force-scroll.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
@@ -258,102 +257,5 @@
   <script src="season_map_momentum.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="enhancements-wakelock.js"></script>
-  
-  <!-- 6. Scrollbar Fix -->
-  <script src="season-scroll-fix.js"></script>
-  
-  <!-- 7. Goal Value Dedicated Fix -->
-  <script src="goal-value-scroll-fix.js"></script>
-  
-  <!-- 8. EMERGENCY FIX: Goal Value Scrolling -->
-  <script>
-  (function() {
-    function fixGoalValueScrolling() {
-      const container = document.getElementById('goalValueContainer');
-      if (!container) return;
-      
-      const table = container.querySelector('table');
-      if (!table) return;
-      
-      // Force styles
-      container.style.cssText = `
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        display: block !important;
-        position: relative !important;
-      `;
-      
-      table.style.cssText = `
-        width: auto !important;
-        min-width: 2200px !important;
-        display: table !important;
-        table-layout: fixed !important;
-      `;
-      
-      // Set fixed widths
-      const ths = table.querySelectorAll('thead th');
-      const tds = table.querySelectorAll('tbody td');
-      
-      ths.forEach((th, i) => {
-        if (i === 0) {
-          th.style.width = '150px';
-          th.style.minWidth = '150px';
-        } else if (i === ths.length - 1) {
-          th.style.width = '100px';
-          th.style.minWidth = '100px';
-        } else {
-          th.style.width = '100px';
-          th.style.minWidth = '100px';
-        }
-      });
-      
-      tds.forEach((td, i) => {
-        const colIndex = i % (ths.length);
-        if (colIndex === 0) {
-          td.style.width = '150px';
-          td.style.minWidth = '150px';
-        } else if (colIndex === ths.length - 1) {
-          td.style.width = '100px';
-          td.style.minWidth = '100px';
-        } else {
-          td.style.width = '100px';
-          td.style.minWidth = '100px';
-        }
-      });
-      
-      console.log('Goal Value Fixed:', {
-        containerWidth: container.clientWidth,
-        tableWidth: table.offsetWidth,
-        scrollWidth: container.scrollWidth,
-        canScroll: container.scrollWidth > container.clientWidth
-      });
-    }
-    
-    // Run multiple times
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(fixGoalValueScrolling, 500);
-        setTimeout(fixGoalValueScrolling, 1000);
-        setTimeout(fixGoalValueScrolling, 2000);
-      });
-    } else {
-      setTimeout(fixGoalValueScrolling, 500);
-      setTimeout(fixGoalValueScrolling, 1000);
-      setTimeout(fixGoalValueScrolling, 2000);
-    }
-    
-    // Watch for changes
-    const observer = new MutationObserver(() => {
-      setTimeout(fixGoalValueScrolling, 300);
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  })();
-  </script>
 </body>
 </html>
