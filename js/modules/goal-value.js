@@ -91,6 +91,11 @@ App.goalValue = {
     const table = document.createElement("table");
     table.className = "goalvalue-table gv-no-patch";
     
+    // WICHTIG: Stelle sicher dass Tabelle breit genug wird
+    table.style.width = 'auto';
+    table.style.minWidth = 'max-content';
+    table.style.tableLayout = 'auto'; // NICHT fixed!
+    
     // Header
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
@@ -142,7 +147,7 @@ App.goalValue = {
       const tdName = document.createElement("td");
       tdName.className = "gv-name-cell";
       tdName.textContent = name;
-      tdName.title = name; // Tooltip für lange Namen
+      tdName.title = name;
       row.appendChild(tdName);
       
       const vals = (gData[name] && Array.isArray(gData[name])) ? gData[name].slice() : opponents.map(() => 0);
@@ -237,7 +242,7 @@ App.goalValue = {
     opponents.forEach((_, i) => {
       const td = document.createElement("td");
       
-      // DROPDOWN statt Span
+      // DROPDOWN
       const select = document.createElement("select");
       select.className = "gv-scale-dropdown";
       
@@ -276,37 +281,18 @@ App.goalValue = {
     
     this.container.appendChild(wrapper);
     
-    // Setze dynamische Spaltenbreite basierend auf längstem Namen
-    this.setColumnWidths(table, maxNameLength, opponents.length);
-  },
-  
-  setColumnWidths(table, maxNameLength, oppCount) {
-    // Berechne optimale Breite: 10px pro Zeichen + Padding
-    const nameColWidth = Math.max(150, Math.min(300, maxNameLength * 10 + 30));
-    
-    let colgroup = table.querySelector('colgroup');
-    if (!colgroup) {
-      colgroup = document.createElement('colgroup');
-      table.insertBefore(colgroup, table.firstChild);
-    }
-    colgroup.innerHTML = '';
-    
-    // Namensspalte
-    const col1 = document.createElement('col');
-    col1.style.width = `${nameColWidth}px`;
-    colgroup.appendChild(col1);
-    
-    // Opponent-Spalten
-    for (let i = 0; i < oppCount; i++) {
-      const col = document.createElement('col');
-      col.style.width = '80px';
-      colgroup.appendChild(col);
-    }
-    
-    // Value-Spalte
-    const colValue = document.createElement('col');
-    colValue.style.width = '90px';
-    colgroup.appendChild(colValue);
+    // Nach Render: Force Scrollbar
+    setTimeout(() => {
+      const container = document.getElementById('goalValueContainer');
+      if (container) {
+        container.style.overflowX = 'scroll';
+        console.log('Goal Value Scrollbar:', {
+          containerWidth: container.clientWidth,
+          tableWidth: table.offsetWidth,
+          scrollWidth: container.scrollWidth
+        });
+      }
+    }, 100);
   },
   
   updateValueCell(playerName, valueCellMap) {
