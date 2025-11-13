@@ -114,7 +114,7 @@ h1 {
   flex: 1;
 }
 
-/* Top bar - allgemeine Basis */
+/* Basis Top-Bar (für alle Seiten) */
 .top-bar {
   display: flex;
   flex-wrap: nowrap;
@@ -127,12 +127,37 @@ h1 {
   -webkit-overflow-scrolling: touch;
 }
 
-/* SPEZIFISCH: GAME DATA - Buttons gleichmässig, kein Scrollbar sichtbar, auto verkleinern */
+/* SPEZIFISCH: GAME DATA – gleichmässig verteilen, kein Scrollbar, bei Bedarf minimal kleiner */
 #statsPage .top-bar {
-  max-width: none;               /* volle Breite der Seite */
-  width: 100%;
-  justify-content: space-between;/* gleichmässig verteilt */
-  overflow: hidden;              /* Scrollbar unterdrücken */
+  max-width: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: clamp(6px, 1vw, 10px) !important;
+  overflow-x: hidden !important; /* Scrollbar entfernen */
+  padding: 8px 0 !important;
+}
+#statsPage .top-btn,
+#statsPage .import-csv-btn {
+  flex: 1 1 0 !important;                 /* gleiche Breite, darf schrumpfen */
+  min-width: 0 !important;                /* Schrumpfen erlauben */
+  white-space: nowrap !important;         /* kein Umbruch im Button-Text */
+  font-size: clamp(0.80rem, 1.0vw, 0.95rem) !important;
+  padding: clamp(6px, 0.9vw, 8px) clamp(8px, 1.4vw, 14px) !important;
+  min-height: 40px !important;
+}
+/* Optional: Timer numerische Stabilität */
+#statsPage #timerBtn { font-variant-numeric: tabular-nums; }
+
+/* Season-Seite eigene Topbar */
+#seasonPage .top-bar {
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .top-btn,
@@ -154,17 +179,6 @@ h1 {
   flex: 0 0 auto;
   min-width: 140px;
 }
-
-/* SPEZIFISCH: GAME DATA - Buttons teilen sich die Breite und schrumpfen leicht bei Platzmangel */
-#statsPage .top-btn,
-#statsPage .import-csv-btn {
-  flex: 1 1 0;                              /* gleiche Breite für alle */
-  min-width: clamp(90px, 9vw, 140px);       /* minimal etwas kleiner werden dürfen */
-  font-size: clamp(0.80rem, 1.2vw, 0.95rem);
-  padding: clamp(6px, 1.2vw, 8px) clamp(8px, 2vw, 14px);
-  white-space: nowrap;                       /* kein Zeilenumbruch im Button-Text */
-}
-
 .top-btn:hover,
 .import-csv-btn:hover { background: #3b3b3b; }
 
@@ -468,7 +482,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 /* Scroll-Wrapper */
 .table-scroll {
   width: 100% !important;
-  overflow-x: auto !important;
+  overflow-x: auto !important;   /* horizontal scroll */
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
 }
