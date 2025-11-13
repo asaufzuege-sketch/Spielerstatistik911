@@ -314,22 +314,24 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .period-buttons.bottom-row .time-btn:hover { background-color: #ffd3d3; }
 .time-btn:active { transform: scale(1.05); }
 
-/* SEASON PAGE - KOMPLETT LINKS */
+/* SEASON PAGE - GANZ LINKS (0px Start) */
 #seasonPage {
   width: 100%;
   max-width: none;
-  padding-left: 0;
-  margin-left: 0;
+  padding: 0;
+  margin: 0;
 }
 
 #seasonPage h1 {
   text-align: left;
-  padding-left: 20px;
+  padding-left: 8px;
+  margin-left: 0;
 }
 
 #seasonPage .page-top {
   align-items: flex-start;
-  padding-left: 20px;
+  padding-left: 8px;
+  margin-left: 0;
 }
 
 #seasonContainer {
@@ -339,7 +341,8 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   overflow-x: auto !important;
   padding: 0 !important;
   margin: 0 !important;
-  padding-left: 20px !important;
+  padding-left: 8px !important;
+  margin-left: 0 !important;
   box-sizing: border-box !important;
 }
 
@@ -393,8 +396,8 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-top: 2px solid #333;
 }
 
-/* GOAL VALUE TABLE - KEINE TRENNLINIEN BEI NAMEN */
-.goal-value-table {
+/* GOAL VALUE TABLE - AUTO-WIDTH NAMEN, KEINE TRENNLINIEN */
+.goalvalue-table {
   width: 100%;
   border-collapse: collapse;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
@@ -403,29 +406,29 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   table-layout: fixed;
 }
 
-.goal-value-table tbody tr:nth-child(odd) { background: var(--row-odd); }
-.goal-value-table tbody tr:nth-child(even) { background: var(--row-even); }
+.goalvalue-table tbody tr:nth-child(odd) { background: var(--row-odd); }
+.goalvalue-table tbody tr:nth-child(even) { background: var(--row-even); }
 
-.goal-value-table tbody tr:hover {
+.goalvalue-table tbody tr:hover {
   background: inherit !important;
 }
 
-.goal-value-table th {
+.goalvalue-table th {
   padding: 6px 4px !important;
   border-bottom: 2px solid #333;
 }
 
-.goal-value-table td {
+.goalvalue-table td {
   padding: 6px 4px !important;
   text-align: center;
   border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
-/* NAMENSSPALTE: KEINE TRENNLINIEN */
+/* NAMENSSPALTE: AUTO-WIDTH, KEINE TRENNLINIEN */
 .gv-name-cell {
   text-align: left !important;
   padding-left: 12px !important;
-  padding-right: 8px !important;
+  padding-right: 12px !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -434,6 +437,11 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-top: none !important;
   border-left: none !important;
   border-right: none !important;
+}
+
+.gv-name-header {
+  text-align: left !important;
+  padding-left: 12px !important;
 }
 
 .gv-data-cell {
@@ -460,34 +468,36 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-size: 0.85rem;
 }
 
-.gv-scale {
-  cursor: pointer;
-  color: #fff;
-  background: rgba(0,0,0,0.35);
-  padding: 6px 10px;
-  border-radius: 6px;
-  display: inline-block;
-  font-weight: 700;
-  font-size: 0.95rem;
-  min-width: 40px;
-  text-align: center;
-}
-
-.gv-scale:hover {
-  background: rgba(0,0,0,0.55);
-}
-
 .gv-scale-dropdown {
-  width: 75px !important;
-  padding: 8px 4px !important;
+  width: 70px !important;
+  padding: 6px 4px !important;
   border-radius: 6px !important;
   border: 2px solid #555 !important;
   background: rgba(30,30,30,0.95) !important;
   color: #fff !important;
   font-weight: 700 !important;
   text-align: center !important;
+  text-align-last: center !important;
   cursor: pointer !important;
-  font-size: 1rem !important;
+  font-size: 0.95rem !important;
+  outline: none !important;
+}
+
+.gv-scale-dropdown:hover {
+  background: rgba(40,40,40,0.98) !important;
+  border-color: #777 !important;
+}
+
+.gv-scale-dropdown:focus {
+  outline: 2px solid #00ff80 !important;
+  outline-offset: 1px !important;
+  border-color: #00ff80 !important;
+}
+
+.gv-scale-dropdown option {
+  background: #1a1a1a !important;
+  color: #fff !important;
+  padding: 8px !important;
 }
 
 .inline-editor {
@@ -530,6 +540,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   
   #seasonContainer {
     width: calc(100vw - 20px) !important;
-    padding-left: 10px !important;
+    padding-left: 4px !important;
   }
 }
