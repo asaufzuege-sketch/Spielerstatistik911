@@ -114,41 +114,25 @@ h1 {
   flex: 1;
 }
 
-#playerSelectionPage .confirm-btn {
-  display: block;
-  margin: 20px auto;
-  padding: 8px 14px;
-  background: #e3fba7;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  color: #000;
-  font-weight: 400;
-  height: 40px;
-  line-height: 24px;
-  transition: background 0.2s;
-}
-#playerSelectionPage .confirm-btn:hover { filter: brightness(0.98); }
-
+/* Top bar - allgemeine Basis */
 .top-bar {
   display: flex;
-  flex-wrap: nowrap;              /* ohne Umbruch */
+  flex-wrap: nowrap;
   gap: 8px;
   justify-content: center;
   padding: 8px 0;
   width: 100%;
   max-width: 900px;
-  overflow-x: auto;               /* seitlicher Scroll falls nötig */
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-#seasonPage .top-bar {
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+/* SPEZIFISCH: GAME DATA - Buttons gleichmässig, kein Scrollbar sichtbar, auto verkleinern */
+#statsPage .top-bar {
+  max-width: none;               /* volle Breite der Seite */
+  width: 100%;
+  justify-content: space-between;/* gleichmässig verteilt */
+  overflow: hidden;              /* Scrollbar unterdrücken */
 }
 
 .top-btn,
@@ -170,6 +154,17 @@ h1 {
   flex: 0 0 auto;
   min-width: 140px;
 }
+
+/* SPEZIFISCH: GAME DATA - Buttons teilen sich die Breite und schrumpfen leicht bei Platzmangel */
+#statsPage .top-btn,
+#statsPage .import-csv-btn {
+  flex: 1 1 0;                              /* gleiche Breite für alle */
+  min-width: clamp(90px, 9vw, 140px);       /* minimal etwas kleiner werden dürfen */
+  font-size: clamp(0.80rem, 1.2vw, 0.95rem);
+  padding: clamp(6px, 1.2vw, 8px) clamp(8px, 2vw, 14px);
+  white-space: nowrap;                       /* kein Zeilenumbruch im Button-Text */
+}
+
 .top-btn:hover,
 .import-csv-btn:hover { background: #3b3b3b; }
 
@@ -435,7 +430,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-top: 2px solid #333;
 }
 
-/* GOAL VALUE PAGE - FUNKTIONIERENDE VERSION */
+/* GOAL VALUE PAGE */
 #goalValuePage {
   width: 100%;
   max-width: none;
@@ -473,7 +468,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 /* Scroll-Wrapper */
 .table-scroll {
   width: 100% !important;
-  overflow-x: auto !important;   /* wichtig: horizontal scroll */
+  overflow-x: auto !important;
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
 }
