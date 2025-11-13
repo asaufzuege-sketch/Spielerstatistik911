@@ -48,7 +48,7 @@ const App = {
     }
   },
   
-  // CSS Injection für Season/GoalValue Tables
+  // CSS Injection für Season/GoalValue Tables (SCROLL FIX eingearbeitet)
   injectTableStyles() {
     const existing = document.getElementById('season-goalvalue-left-align');
     if (existing) existing.remove();
@@ -66,7 +66,7 @@ const App = {
         width: 100% !important;
       }
       #seasonContainer .table-scroll, #goalValueContainer .table-scroll {
-        overflow-x: auto !important;
+        overflow-x: auto !important;          /* WICHTIG: horizontal scroll ermöglichen */
         overflow-y: hidden !important;
         -webkit-overflow-scrolling: touch !important;
         width: 100% !important;
@@ -102,8 +102,13 @@ const App = {
           width: 100vw !important;
           overflow: visible !important;
         }
-        #seasonContainer .table-scroll, #goalValueContainer .table-scroll {
+        /* Season soll auf sehr breiten Screens nicht mehr horizontal scrollen */
+        #seasonContainer .table-scroll {
           overflow-x: hidden !important;
+        }
+        /* Goal Value DARF weiterhin scrollen -> KEIN overflow-x: hidden! */
+        #goalValueContainer .table-scroll {
+          overflow-x: auto !important;
         }
         #seasonContainer table {
           width: auto !important;
@@ -112,7 +117,7 @@ const App = {
           font-size: 13px !important;
         }
         #goalValueContainer table {
-          width: calc(100vw - 24px) !important;
+          width: auto !important;
           table-layout: fixed !important;
           white-space: nowrap !important;
           font-size: 13px !important;
@@ -134,7 +139,7 @@ const App = {
         this.pages = {
           selection: document.getElementById("playerSelectionPage"),
           stats: document.getElementById("statsPage"),
-          torbild: document.getElementById("torbildPage"),
+            torbild: document.getElementById("torbildPage"),
           goalValue: document.getElementById("goalValuePage"),
           season: document.getElementById("seasonPage"),
           seasonMap: document.getElementById("seasonMapPage")
@@ -160,7 +165,7 @@ const App = {
         } catch (e) {}
       }
       
-      // Update Title
+      // Title setzen
       const titles = {
         selection: "Spielerauswahl",
         stats: "Statistiken",
@@ -171,7 +176,7 @@ const App = {
       };
       document.title = titles[page] || "Spielerstatistik";
       
-      // Render bei Seitenwechsel
+      // Render bei Seitenwechsel verzögert
       setTimeout(() => {
         if (page === "stats" && this.statsTable && typeof this.statsTable.render === 'function') {
           this.statsTable.render();
