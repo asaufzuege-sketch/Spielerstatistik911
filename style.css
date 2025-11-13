@@ -650,3 +650,56 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
     padding-left: 2px !important;
   }
 }
+
+/* HORIZONTAL SCROLLING FÜR GOAL VALUE UND SEASON */
+
+/* Goal Value Container muss scrollbar sein */
+#goalValueContainer {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Season Container muss scrollbar sein */
+#seasonContainer {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
+/* Tabellen dürfen nicht umbrechen */
+#goalValueContainer table,
+#seasonContainer table {
+  white-space: nowrap !important;
+  width: auto !important;
+  min-width: 100% !important;
+}
+
+/* Sichtbarer Scrollbar */
+#goalValueContainer::-webkit-scrollbar,
+#seasonContainer::-webkit-scrollbar {
+  height: 14px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+#goalValueContainer::-webkit-scrollbar-thumb,
+#seasonContainer::-webkit-scrollbar-thumb {
+  background: #44bb91;
+  border-radius: 7px;
+}
+
+#goalValueContainer::-webkit-scrollbar-thumb:hover,
+#seasonContainer::-webkit-scrollbar-thumb:hover {
+  background: #3a9d7a;
+}
+
+/* Firefox Scrollbar */
+#goalValueContainer,
+#seasonContainer {
+  scrollbar-width: auto;
+  scrollbar-color: #44bb91 rgba(0, 0, 0, 0.1);
+}
