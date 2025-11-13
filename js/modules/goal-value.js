@@ -1,7 +1,7 @@
 // Goal Value Modul
 App.goalValue = {
   container: null,
-  clickTimers: {}, // Pro Zelle einen Timer
+  clickTimers: {},
   
   init() {
     this.container = document.getElementById("goalValueContainer");
@@ -91,11 +91,13 @@ App.goalValue = {
     const table = document.createElement("table");
     table.className = "goalvalue-table gv-no-patch";
     
+    // Header
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
     
     const thPlayer = document.createElement("th");
     thPlayer.textContent = "Spieler";
+    thPlayer.className = "gv-name-header";
     headerRow.appendChild(thPlayer);
     
     opponents.forEach((op, idx) => {
@@ -122,9 +124,16 @@ App.goalValue = {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
+    // Body
     const tbody = document.createElement("tbody");
     const valueCellMap = {};
     const colors = App.helpers.getColorStyles();
+    
+    // Berechne längsten Namen
+    let maxNameLength = 0;
+    playersList.forEach(name => {
+      if (name.length > maxNameLength) maxNameLength = name.length;
+    });
     
     playersList.forEach((name, rowIdx) => {
       const row = document.createElement("tr");
@@ -133,6 +142,7 @@ App.goalValue = {
       const tdName = document.createElement("td");
       tdName.className = "gv-name-cell";
       tdName.textContent = name;
+      tdName.title = name; // Tooltip für lange Namen
       row.appendChild(tdName);
       
       const vals = (gData[name] && Array.isArray(gData[name])) ? gData[name].slice() : opponents.map(() => 0);
@@ -150,7 +160,6 @@ App.goalValue = {
         td.textContent = String(v);
         td.style.color = v > 0 ? colors.pos : v < 0 ? colors.neg : colors.zero;
         
-        // EINFACHER Click-Handler: NUR click-Event
         td.addEventListener("click", (e) => {
           e.preventDefault();
           
@@ -158,7 +167,6 @@ App.goalValue = {
           const playerName = td.dataset.player;
           const oppIdx = Number(td.dataset.oppIdx);
           
-          // Wenn Timer läuft = Doppelklick
           if (this.clickTimers[cellId]) {
             clearTimeout(this.clickTimers[cellId]);
             delete this.clickTimers[cellId];
@@ -176,7 +184,6 @@ App.goalValue = {
             this.updateValueCell(playerName, valueCellMap);
             
           } else {
-            // ERSTER KLICK: Timer starten
             this.clickTimers[cellId] = setTimeout(() => {
               delete this.clickTimers[cellId];
               
@@ -210,7 +217,7 @@ App.goalValue = {
       tbody.appendChild(row);
     });
     
-    // Bottom Scale Row
+    // Bottom Scale Row mit Dropdown
     const bottomRow = document.createElement("tr");
     bottomRow.className = (playersList.length % 2 === 0 ? "even-row" : "odd-row");
     
@@ -229,17 +236,22 @@ App.goalValue = {
     
     opponents.forEach((_, i) => {
       const td = document.createElement("td");
-      const span = document.createElement("span");
-      span.className = "gv-scale";
-      span.textContent = String(storedBottom[i]);
       
-      span.addEventListener("click", () => {
+      // DROPDOWN statt Span
+      const select = document.createElement("select");
+      select.className = "gv-scale-dropdown";
+      
+      scaleOptions.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        if (opt === String(storedBottom[i])) option.selected = true;
+        select.appendChild(option);
+      });
+      
+      select.addEventListener("change", () => {
         const arr = this.getBottom();
-        let idx = scaleOptions.indexOf(String(span.textContent));
-        if (idx === -1) idx = 0;
-        idx = (idx + 1) % scaleOptions.length;
-        span.textContent = scaleOptions[idx];
-        arr[i] = Number(scaleOptions[idx]);
+        arr[i] = Number(select.value);
         this.setBottom(arr);
         
         Object.keys(valueCellMap).forEach(pn => {
@@ -247,7 +259,7 @@ App.goalValue = {
         });
       });
       
-      td.appendChild(span);
+      td.appendChild(select);
       bottomRow.appendChild(td);
     });
     
@@ -263,6 +275,38 @@ App.goalValue = {
     wrapper.appendChild(table);
     
     this.container.appendChild(wrapper);
+    
+    // Setze dynamische Spaltenbreite basierend auf längstem Namen
+    this.setColumnWidths(table, maxNameLength, opponents.length);
+  },
+  
+  setColumnWidths(table, maxNameLength, oppCount) {
+    // Berechne optimale Breite: 10px pro Zeichen + Padding
+    const nameColWidth = Math.max(150, Math.min(300, maxNameLength * 10 + 30));
+    
+    let colgroup = table.querySelector('colgroup');
+    if (!colgroup) {
+      colgroup = document.createElement('colgroup');
+      table.insertBefore(colgroup, table.firstChild);
+    }
+    colgroup.innerHTML = '';
+    
+    // Namensspalte
+    const col1 = document.createElement('col');
+    col1.style.width = `${nameColWidth}px`;
+    colgroup.appendChild(col1);
+    
+    // Opponent-Spalten
+    for (let i = 0; i < oppCount; i++) {
+      const col = document.createElement('col');
+      col.style.width = '80px';
+      colgroup.appendChild(col);
+    }
+    
+    // Value-Spalte
+    const colValue = document.createElement('col');
+    colValue.style.width = '90px';
+    colgroup.appendChild(colValue);
   },
   
   updateValueCell(playerName, valueCellMap) {
