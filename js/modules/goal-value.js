@@ -271,5 +271,77 @@ App.goalValue = {
       select.style.width = "80px";
       
       scaleOptions.forEach(opt => {
-        const option = document.createElement('*
-
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        select.appendChild(option);
+      });
+      
+      const b = this.getBottom();
+      if (b && typeof b[i] !== "undefined") select.value = String(b[i]);
+      
+      select.addEventListener("change", () => {
+        const arr = this.getBottom();
+        arr[i] = Number(select.value);
+        this.setBottom(arr);
+        
+        Object.keys(valueCellMap).forEach(pn => {
+          this.updateValueCell(pn, valueCellMap);
+        });
+      });
+      
+      td.appendChild(select);
+      bottomRow.appendChild(td);
+    });
+    
+    const emptyTd = document.createElement("td");
+    emptyTd.textContent = "";
+    emptyTd.style.padding = "6px";
+    bottomRow.appendChild(emptyTd);
+    
+    tbody.appendChild(bottomRow);
+    table.appendChild(tbody);
+    
+    // KRITISCH: Wrap table in scroll wrapper (aus Repo 909)
+    const wrapper = document.createElement('div');
+    wrapper.className = 'table-scroll';
+    wrapper.style.width = '100%';
+    wrapper.style.boxSizing = 'border-box';
+    wrapper.style.overflowX = 'auto';
+    wrapper.style.overflowY = 'hidden';
+    wrapper.style.WebkitOverflowScrolling = 'touch';
+    wrapper.appendChild(table);
+    
+    this.container.appendChild(wrapper);
+    
+    console.log('Goal Value Table rendered with scroll wrapper');
+  },
+  
+  updateValueCell(playerName, valueCellMap) {
+    const vc = valueCellMap[playerName];
+    if (!vc) return;
+    
+    const colors = App.helpers.getColorStyles();
+    const val = this.computeValueForPlayer(playerName);
+    vc.textContent = this.formatValueNumber(val);
+    vc.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
+    vc.style.fontWeight = val !== 0 ? "700" : "400";
+  },
+  
+  reset() {
+    if (!confirm("Goal Value zurücksetzen?")) return;
+    
+    const opponents = this.getOpponents();
+    const playersList = Object.keys(App.data.seasonData).length 
+      ? Object.keys(App.data.seasonData) 
+      : App.data.selectedPlayers.map(p => p.name);
+    
+    const newData = {};
+    playersList.forEach(n => newData[n] = opponents.map(() => 0));
+    this.setData(newData);
+    this.setBottom(opponents.map(() => 0));
+    
+    this.render();
+    alert("Goal Value zurückgesetzt.");
+  }
+};
