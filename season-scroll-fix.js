@@ -1,118 +1,115 @@
-// season-scroll-fix.js - Erzwingt sichtbaren Scrollbar
+// season-scroll-fix.js - Erzwingt funktionierendes Scrolling
 (function() {
   'use strict';
   
-  function forceScrollbar() {
+  function enableScrolling() {
     const seasonContainer = document.getElementById('seasonContainer');
     const goalValueContainer = document.getElementById('goalValueContainer');
     
-    // Season Container
-    if (seasonContainer) {
-      // Erzwinge overflow
-      seasonContainer.style.overflowX = 'scroll';
-      seasonContainer.style.overflowY = 'hidden';
-      seasonContainer.style.WebkitOverflowScrolling = 'touch';
-      seasonContainer.style.cursor = 'grab';
+    function setupContainer(container, name) {
+      if (!container) return;
       
-      // Mouse Drag Scrolling
-      let isDown = false;
-      let startX;
-      let scrollLeft;
+      // Erzwinge Scroll-Styles
+      container.style.cssText = `
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+      `;
       
-      seasonContainer.addEventListener('mousedown', (e) => {
-        isDown = true;
-        seasonContainer.style.cursor = 'grabbing';
-        startX = e.pageX - seasonContainer.offsetLeft;
-        scrollLeft = seasonContainer.scrollLeft;
+      // Prüfe ob scrollbar ist
+      const checkScroll = () => {
+        const table = container.querySelector('table');
+        if (table) {
+          console.log(`${name}:`, {
+            containerWidth: container.clientWidth,
+            tableWidth: table.offsetWidth,
+            scrollWidth: container.scrollWidth,
+            canScroll: container.scrollWidth > container.clientWidth
+          });
+          
+          // Wenn Tabelle breiter als Container, force scrollbar
+          if (table.offsetWidth > container.clientWidth) {
+            container.style.overflowX = 'scroll';
+            console.log(`${name}: Scrollbar aktiviert`);
+          }
+        }
+      };
+      
+      // Initial check
+      setTimeout(checkScroll, 200);
+      setTimeout(checkScroll, 500);
+      setTimeout(checkScroll, 1000);
+      
+      // Mouse-Drag Scrolling
+      let isDragging = false;
+      let startX = 0;
+      let scrollLeft = 0;
+      
+      container.addEventListener('mousedown', (e) => {
+        // Ignoriere Clicks auf Buttons/Inputs
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+          return;
+        }
+        
+        isDragging = true;
+        container.style.cursor = 'grabbing';
+        container.style.userSelect = 'none';
+        startX = e.pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
       });
       
-      seasonContainer.addEventListener('mouseleave', () => {
-        isDown = false;
-        seasonContainer.style.cursor = 'grab';
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        container.style.cursor = 'grab';
+        container.style.userSelect = '';
       });
       
-      seasonContainer.addEventListener('mouseup', () => {
-        isDown = false;
-        seasonContainer.style.cursor = 'grab';
-      });
-      
-      seasonContainer.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
         e.preventDefault();
-        const x = e.pageX - seasonContainer.offsetLeft;
-        const walk = (x - startX) * 2;
-        seasonContainer.scrollLeft = scrollLeft - walk;
+        const x = e.pageX - container.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        container.scrollLeft = scrollLeft - walk;
       });
       
-      // Debug Info
-      console.log('Season Container:', {
-        scrollWidth: seasonContainer.scrollWidth,
-        clientWidth: seasonContainer.clientWidth,
-        isScrollable: seasonContainer.scrollWidth > seasonContainer.clientWidth
-      });
+      // Touch Scrolling (für Tablets)
+      let touchStartX = 0;
+      let touchScrollLeft = 0;
+      
+      container.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].pageX;
+        touchScrollLeft = container.scrollLeft;
+      }, { passive: true });
+      
+      container.addEventListener('touchmove', (e) => {
+        const touchX = e.touches[0].pageX;
+        const diff = touchStartX - touchX;
+        container.scrollLeft = touchScrollLeft + diff;
+      }, { passive: true });
     }
     
-    // Goal Value Container
-    if (goalValueContainer) {
-      goalValueContainer.style.overflowX = 'scroll';
-      goalValueContainer.style.overflowY = 'hidden';
-      goalValueContainer.style.WebkitOverflowScrolling = 'touch';
-      goalValueContainer.style.cursor = 'grab';
-      
-      let isDown = false;
-      let startX;
-      let scrollLeft;
-      
-      goalValueContainer.addEventListener('mousedown', (e) => {
-        isDown = true;
-        goalValueContainer.style.cursor = 'grabbing';
-        startX = e.pageX - goalValueContainer.offsetLeft;
-        scrollLeft = goalValueContainer.scrollLeft;
-      });
-      
-      goalValueContainer.addEventListener('mouseleave', () => {
-        isDown = false;
-        goalValueContainer.style.cursor = 'grab';
-      });
-      
-      goalValueContainer.addEventListener('mouseup', () => {
-        isDown = false;
-        goalValueContainer.style.cursor = 'grab';
-      });
-      
-      goalValueContainer.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - goalValueContainer.offsetLeft;
-        const walk = (x - startX) * 2;
-        goalValueContainer.scrollLeft = scrollLeft - walk;
-      });
-      
-      console.log('Goal Value Container:', {
-        scrollWidth: goalValueContainer.scrollWidth,
-        clientWidth: goalValueContainer.clientWidth,
-        isScrollable: goalValueContainer.scrollWidth > goalValueContainer.clientWidth
-      });
-    }
+    setupContainer(seasonContainer, 'Season');
+    setupContainer(goalValueContainer, 'Goal Value');
   }
   
-  // Warte auf DOM Ready
+  // Multi-Trigger
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(forceScrollbar, 500);
-    });
+    document.addEventListener('DOMContentLoaded', enableScrolling);
   } else {
-    setTimeout(forceScrollbar, 500);
+    enableScrolling();
   }
   
-  // Nochmal nach Seitenwechsel
-  const observer = new MutationObserver(() => {
-    setTimeout(forceScrollbar, 300);
-  });
-  
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+  // Nach jedem Seitenwechsel
+  let lastPage = '';
+  setInterval(() => {
+    const currentPage = [...document.querySelectorAll('.page')].find(p => p.style.display !== 'none');
+    if (currentPage && currentPage.id !== lastPage) {
+      lastPage = currentPage.id;
+      setTimeout(enableScrolling, 300);
+    }
+  }, 500);
   
 })();
