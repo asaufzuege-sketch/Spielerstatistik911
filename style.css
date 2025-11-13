@@ -1,5 +1,3 @@
-/* Vollständige style.css mit Scroll-Fix für Goal Value */
-
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
@@ -135,17 +133,22 @@ h1 {
 
 .top-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;              /* ohne Umbruch */
   gap: 8px;
   justify-content: center;
   padding: 8px 0;
   width: 100%;
   max-width: 900px;
+  overflow-x: auto;               /* seitlicher Scroll falls nötig */
+  -webkit-overflow-scrolling: touch;
 }
 
 #seasonPage .top-bar {
   gap: 12px;
   justify-content: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .top-btn,
@@ -316,7 +319,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .period-buttons.bottom-row .time-btn:hover { background-color: #ffd3d3; }
 .time-btn:active { transform: scale(1.05); }
 
-/* SEASON PAGE - SCROLLBAR */
+/* SEASON PAGE - MIT ERZWUNGENEM SCROLLBAR */
 #seasonPage {
   width: 100vw !important;
   max-width: 100vw !important;
@@ -356,6 +359,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   position: relative !important;
 }
 
+/* IMMER sichtbarer Scrollbar - Chrome/Safari */
 #seasonContainer::-webkit-scrollbar {
   -webkit-appearance: none !important;
   height: 18px !important;
@@ -377,6 +381,8 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 #seasonContainer::-webkit-scrollbar-thumb:active {
   background-color: #2d7d5f !important;
 }
+
+/* Firefox Scrollbar */
 #seasonContainer {
   scrollbar-width: auto !important;
   scrollbar-color: #44bb91 rgba(0, 0, 0, 0.2) !important;
@@ -429,7 +435,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-top: 2px solid #333;
 }
 
-/* GOAL VALUE PAGE */
+/* GOAL VALUE PAGE - FUNKTIONIERENDE VERSION */
 #goalValuePage {
   width: 100%;
   max-width: none;
@@ -464,14 +470,15 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   scrollbar-color: #44bb91 rgba(0, 0, 0, 0.2) !important;
 }
 
-/* WICHTIGER FIX: vorher overflow: visible; */
+/* Scroll-Wrapper */
 .table-scroll {
   width: 100% !important;
-  overflow-x: auto !important;
+  overflow-x: auto !important;   /* wichtig: horizontal scroll */
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
 }
 
+/* GOAL VALUE TABLE */
 .goalvalue-table {
   width: auto !important;
   min-width: max-content !important;
@@ -499,6 +506,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
+/* Name Zellen */
 .gv-name-cell {
   text-align: left !important;
   padding-left: 12px !important;
@@ -512,7 +520,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-left: none !important;
   border-right: none !important;
 }
-
 .gv-name-header {
   text-align: left !important;
   padding-left: 12px !important;
@@ -520,17 +527,18 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   color: #fff !important;
 }
 
+/* Zellen */
 .gv-data-cell {
   cursor: pointer;
   user-select: none;
   font-weight: 600;
   -webkit-tap-highlight-color: transparent;
 }
-
 .gv-value-cell {
   font-weight: 700;
 }
 
+/* Opponent Input */
 .goalvalue-title-input {
   background: var(--header-bg) !important;
   border: 1px solid rgba(255,255,255,0.2) !important;
@@ -549,6 +557,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   background: #2a2a2a !important;
 }
 
+/* Dropdown */
 .gv-scale-dropdown {
   width: 75px !important;
   padding: 8px 6px !important;
@@ -583,6 +592,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   padding: 10px !important;
 }
 
+/* Inline Editor (Reserve) */
 .inline-editor {
   padding: 4px 6px;
   border: 1px solid #cfcfcf;
@@ -592,6 +602,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   text-align: center;
 }
 
+/* Season Map Momentum Container (bestehend) */
 #seasonMapMomentumContainer {
   width: 100%;
   max-width: 1100px;
@@ -613,6 +624,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-size: 11px;
 }
 
+/* Responsive Kleinigkeiten */
 @media (max-width: 900px) {
   .torbild-layout { flex-direction: column; height: auto; }
   .goalvalue-title-input { font-size: 0.85rem; }
@@ -622,20 +634,20 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   #seasonContainer { padding-left: 2px !important; }
 }
 
-/* -------------------------------------------
-   FIX SCROLL GOAL VALUE (Safety Overrides)
-------------------------------------------- */
-#goalValueContainer {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  -webkit-overflow-scrolling: touch !important;
+/* Totalzeilen-Farben angleichen an Titelzeilen */
+
+/* GAME DATA (Stats) */
+#statsPage .total-row td {
+  background: var(--header-bg) !important;
+  color: var(--text-color) !important;
+  font-weight: 700 !important;
+  border-top: 2px solid #333;
 }
-#goalValueContainer .table-scroll {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-}
-@media (min-width: 1200px) {
-  #goalValueContainer .table-scroll {
-    overflow-x: auto !important; /* NICHT verstecken */
-  }
+
+/* GOAL VALUE — letzte Zeile (Bottom/Total) */
+#goalValuePage .goalvalue-table tbody tr:last-child td {
+  background: var(--header-bg) !important;
+  color: var(--text-color) !important;
+  font-weight: 700 !important;
+  border-top: 2px solid #333;
 }
