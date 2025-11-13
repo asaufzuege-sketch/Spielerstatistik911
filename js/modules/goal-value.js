@@ -91,10 +91,10 @@ App.goalValue = {
     const table = document.createElement("table");
     table.className = "goalvalue-table gv-no-patch";
     
-    // WICHTIG: Stelle sicher dass Tabelle breit genug wird
-    table.style.width = 'auto';
-    table.style.minWidth = 'max-content';
-    table.style.tableLayout = 'auto'; // NICHT fixed!
+    // KRITISCH: Tabelle muss breit genug sein für Scrolling
+    table.style.width = 'max-content';
+    table.style.minWidth = '100%';
+    table.style.tableLayout = 'auto';
     
     // Header
     const thead = document.createElement("thead");
@@ -103,10 +103,12 @@ App.goalValue = {
     const thPlayer = document.createElement("th");
     thPlayer.textContent = "Spieler";
     thPlayer.className = "gv-name-header";
+    thPlayer.style.minWidth = '150px'; // Mindestbreite für Namen
     headerRow.appendChild(thPlayer);
     
     opponents.forEach((op, idx) => {
       const th = document.createElement("th");
+      th.style.minWidth = '100px'; // Mindestbreite pro Opponent
       const input = document.createElement("input");
       input.type = "text";
       input.value = op;
@@ -124,6 +126,7 @@ App.goalValue = {
     
     const thValue = document.createElement("th");
     thValue.textContent = "Value";
+    thValue.style.minWidth = '100px'; // Mindestbreite für Value
     headerRow.appendChild(thValue);
     
     thead.appendChild(headerRow);
@@ -134,12 +137,6 @@ App.goalValue = {
     const valueCellMap = {};
     const colors = App.helpers.getColorStyles();
     
-    // Berechne längsten Namen
-    let maxNameLength = 0;
-    playersList.forEach(name => {
-      if (name.length > maxNameLength) maxNameLength = name.length;
-    });
-    
     playersList.forEach((name, rowIdx) => {
       const row = document.createElement("tr");
       row.className = (rowIdx % 2 === 0 ? "even-row" : "odd-row");
@@ -148,6 +145,7 @@ App.goalValue = {
       tdName.className = "gv-name-cell";
       tdName.textContent = name;
       tdName.title = name;
+      tdName.style.minWidth = '150px';
       row.appendChild(tdName);
       
       const vals = (gData[name] && Array.isArray(gData[name])) ? gData[name].slice() : opponents.map(() => 0);
@@ -155,6 +153,7 @@ App.goalValue = {
       
       opponents.forEach((_, i) => {
         const td = document.createElement("td");
+        td.style.minWidth = '100px'; // Mindestbreite pro Zelle
         const cellId = `${name}-${i}`;
         td.dataset.cellId = cellId;
         td.dataset.player = name;
@@ -212,6 +211,7 @@ App.goalValue = {
       
       const valueTd = document.createElement("td");
       valueTd.className = "gv-value-cell";
+      valueTd.style.minWidth = '100px';
       const val = this.computeValueForPlayer(name);
       valueTd.textContent = this.formatValueNumber(val);
       valueTd.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
@@ -229,6 +229,7 @@ App.goalValue = {
     const labelTd = document.createElement("td");
     labelTd.className = "gv-name-cell";
     labelTd.textContent = "";
+    labelTd.style.minWidth = '150px';
     bottomRow.appendChild(labelTd);
     
     const scaleOptions = [];
@@ -241,6 +242,7 @@ App.goalValue = {
     
     opponents.forEach((_, i) => {
       const td = document.createElement("td");
+      td.style.minWidth = '100px';
       
       // DROPDOWN
       const select = document.createElement("select");
@@ -270,6 +272,7 @@ App.goalValue = {
     
     const emptyTd = document.createElement("td");
     emptyTd.textContent = "";
+    emptyTd.style.minWidth = '100px';
     bottomRow.appendChild(emptyTd);
     
     tbody.appendChild(bottomRow);
@@ -281,18 +284,34 @@ App.goalValue = {
     
     this.container.appendChild(wrapper);
     
-    // Nach Render: Force Scrollbar
+    // Nach Render: Berechne tatsächliche Breite
     setTimeout(() => {
       const container = document.getElementById('goalValueContainer');
-      if (container) {
+      if (container && table) {
+        // Force overflow
         container.style.overflowX = 'scroll';
-        console.log('Goal Value Scrollbar:', {
-          containerWidth: container.clientWidth,
-          tableWidth: table.offsetWidth,
-          scrollWidth: container.scrollWidth
+        
+        const tableWidth = table.offsetWidth;
+        const containerWidth = container.clientWidth;
+        const scrollWidth = container.scrollWidth;
+        
+        console.log('Goal Value Tabelle:', {
+          tableWidth: tableWidth,
+          containerWidth: containerWidth,
+          scrollWidth: scrollWidth,
+          isScrollable: scrollWidth > containerWidth,
+          opponentsCount: opponents.length,
+          expectedMinWidth: (150 + (opponents.length * 100) + 100) + 'px'
         });
+        
+        // Wenn immer noch nicht scrollbar, erzwinge Mindestbreite
+        if (scrollWidth <= containerWidth) {
+          const minWidth = 150 + (opponents.length * 100) + 100;
+          table.style.minWidth = minWidth + 'px';
+          console.log('Force min-width:', minWidth + 'px');
+        }
       }
-    }, 100);
+    }, 200);
   },
   
   updateValueCell(playerName, valueCellMap) {
