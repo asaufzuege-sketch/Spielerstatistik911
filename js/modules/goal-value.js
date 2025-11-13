@@ -79,6 +79,10 @@ App.goalValue = {
     
     this.container.innerHTML = "";
     
+    // Ensure container can scroll horizontally (using setProperty with important flag)
+    this.container.style.setProperty('overflow-x', 'auto', 'important');
+    this.container.style.setProperty('overflow-y', 'hidden', 'important');
+    
     const opponents = this.getOpponents();
     this.ensureDataForSeason();
     const gData = this.getData();
@@ -95,7 +99,7 @@ App.goalValue = {
     table.style.borderCollapse = "collapse";
     table.style.borderRadius = "8px";
     table.style.overflow = "hidden";
-    table.style.tableLayout = "auto";
+    table.style.tableLayout = "fixed";
     
     // Header
     const thead = document.createElement("thead");
@@ -106,7 +110,7 @@ App.goalValue = {
     thPlayer.style.textAlign = "center";
     thPlayer.style.padding = "8px 6px";
     thPlayer.style.borderBottom = "2px solid #333";
-    thPlayer.style.minWidth = "160px";
+    thPlayer.style.width = "160px";
     thPlayer.style.whiteSpace = "nowrap";
     headerRow.appendChild(thPlayer);
     
@@ -115,6 +119,7 @@ App.goalValue = {
       th.style.padding = "6px";
       th.style.borderBottom = "2px solid #333";
       th.style.textAlign = "center";
+      th.style.width = "110px";
       const input = document.createElement("input");
       input.type = "text";
       input.value = op || `Gegner ${idx+1}`;
@@ -138,6 +143,7 @@ App.goalValue = {
     thValue.style.padding = "6px";
     thValue.style.borderBottom = "2px solid #333";
     thValue.style.textAlign = "center";
+    thValue.style.width = "100px";
     headerRow.appendChild(thValue);
     
     thead.appendChild(headerRow);
@@ -158,7 +164,7 @@ App.goalValue = {
       tdName.style.textAlign = "left";
       tdName.style.padding = "6px";
       tdName.style.fontWeight = "700";
-      tdName.style.minWidth = "160px";
+      tdName.style.width = "160px";
       tdName.style.whiteSpace = "nowrap";
       tdName.style.overflow = "visible";
       tdName.style.textOverflow = "clip";
@@ -302,19 +308,10 @@ App.goalValue = {
     tbody.appendChild(bottomRow);
     table.appendChild(tbody);
     
-    // KRITISCH: Wrap table in scroll wrapper (aus Repo 909)
-    const wrapper = document.createElement('div');
-    wrapper.className = 'table-scroll';
-    wrapper.style.width = '100%';
-    wrapper.style.boxSizing = 'border-box';
-    wrapper.style.overflowX = 'auto';
-    wrapper.style.overflowY = 'hidden';
-    wrapper.style.WebkitOverflowScrolling = 'touch';
-    wrapper.appendChild(table);
+    // Append table directly to container (container handles scrolling via CSS)
+    this.container.appendChild(table);
     
-    this.container.appendChild(wrapper);
-    
-    console.log('Goal Value Table rendered with scroll wrapper');
+    console.log('Goal Value Table rendered with fixed layout');
   },
   
   updateValueCell(playerName, valueCellMap) {

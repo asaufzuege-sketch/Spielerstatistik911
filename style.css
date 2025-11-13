@@ -481,7 +481,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 
 .table-scroll {
   width: 100% !important;
-  overflow: visible !important;
 }
 
 /* GOAL VALUE TABLE */
