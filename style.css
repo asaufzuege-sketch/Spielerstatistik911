@@ -314,7 +314,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .period-buttons.bottom-row .time-btn:hover { background-color: #ffd3d3; }
 .time-btn:active { transform: scale(1.05); }
 
-/* SEASON PAGE - GANZ LINKS (0px Start) */
+/* SEASON PAGE - GANZ LINKS MIT VOLLSTÄNDIGEM SCROLL */
 #seasonPage {
   width: 100%;
   max-width: none;
@@ -336,22 +336,26 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 
 #seasonContainer {
   display: block !important;
-  width: calc(100vw - 40px) !important;
-  max-width: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
   overflow-x: auto !important;
+  overflow-y: hidden !important;
   padding: 0 !important;
   margin: 0 !important;
   padding-left: 8px !important;
-  margin-left: 0 !important;
+  padding-right: 8px !important;
   box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 #seasonPage table {
   width: auto !important;
+  min-width: 100% !important;
   table-layout: auto !important;
   border-collapse: collapse !important;
   font-size: 0.95rem !important;
   margin: 0 !important;
+  display: table !important;
 }
 
 #seasonPage th, #seasonPage td {
@@ -396,14 +400,39 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-top: 2px solid #333;
 }
 
+/* GOAL VALUE PAGE - MIT VOLLSTÄNDIGEM SCROLL */
+#goalValuePage {
+  width: 100%;
+  max-width: none;
+}
+
+#goalValueContainer {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-right: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.table-scroll {
+  width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
 /* GOAL VALUE TABLE - AUTO-WIDTH NAMEN, KEINE TRENNLINIEN */
 .goalvalue-table {
-  width: 100%;
+  width: auto !important;
+  min-width: 100% !important;
   border-collapse: collapse;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 13px;
   margin-top: 6px;
   table-layout: fixed;
+  display: table !important;
 }
 
 .goalvalue-table tbody tr:nth-child(odd) { background: var(--row-odd); }
@@ -539,7 +568,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   .top-btn, .import-csv-btn { min-width: 120px; }
   
   #seasonContainer {
-    width: calc(100vw - 20px) !important;
     padding-left: 4px !important;
+    padding-right: 4px !important;
   }
 }
