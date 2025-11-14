@@ -215,6 +215,22 @@ h1 {
 .danger-btn:hover { background: #a30000; }
 .reset-btn { font-weight: 700; }
 
+.confirm-btn {
+  background: #44bb91;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: background 0.2s;
+  display: block;
+  margin: 20px auto;
+  min-width: 200px;
+}
+.confirm-btn:hover { background: #3a9d7a; }
+
 #statsScrollContainer { max-height: none; overflow-y: visible; }
 
 table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
@@ -423,9 +439,9 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   text-align: center;
 }
 #seasonPage thead th:nth-child(1), #seasonPage tbody td:nth-child(1) {
-  width: 48px;
-  min-width: 48px;
-  max-width: 48px;
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
   text-align: center;
 }
 #seasonPage thead th:nth-child(2), #seasonPage tbody td:nth-child(2) {
@@ -511,7 +527,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .goalvalue-table td {
   padding: 6px 4px !important;
   text-align: center;
-  border-bottom: none;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
 /* Name Zellen */
