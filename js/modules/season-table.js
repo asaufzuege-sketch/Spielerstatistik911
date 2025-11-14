@@ -23,11 +23,10 @@ App.seasonTable = {
   render() {
     if (!this.container) return;
     
+    // Container leeren und KEINE inline-Layout-Styles setzen
     this.container.innerHTML = "";
-    this.container.style.display = 'flex';
-    this.container.style.justifyContent = 'center';
-    this.container.style.alignItems = 'flex-start';
-    this.container.style.paddingLeft = '0';
+    // WICHTIG: keine container.style.display/justifyContent/... setzen
+    // Das CSS (#seasonContainer) steuert das Scroll/Größenverhalten analog Goal Value
     
     const headerCols = [
       "Nr", "Spieler", "Games",
@@ -39,12 +38,11 @@ App.seasonTable = {
     
     const table = document.createElement("table");
     table.className = "stats-table";
+    // Inline-Styles so nahe wie möglich an Goal Value:
     table.style.width = "auto";
     table.style.margin = "0";
-    table.style.borderRadius = "8px";
-    table.style.overflow = "hidden";
-    table.style.borderCollapse = "separate";
-    table.style.borderSpacing = "0";
+    table.style.borderCollapse = "collapse";
+    // keine border-spacing/overflow/border-radius setzen, damit CSS dominiert
     
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
@@ -196,7 +194,8 @@ App.seasonTable = {
       tbody.appendChild(tr);
     });
     
-    const colors = App.helpers.getColorStyles();
+    // Kopfzeilen-Farben wie gewohnt
+    const colors = App.helpers.getColorStyles?.() || { headerBg: "var(--header-bg)", headerText: "#fff" };
     headerRow.querySelectorAll("th").forEach(th => {
       th.style.background = colors.headerBg;
       th.style.color = colors.headerText;
@@ -204,6 +203,7 @@ App.seasonTable = {
       th.style.padding = "8px";
     });
     
+    // Total-Zeile
     if (rows.length > 0) {
       const sums = {
         games: 0, goals: 0, assists: 0, points: 0, plusMinus: 0,
@@ -271,6 +271,7 @@ App.seasonTable = {
     
     table.appendChild(tbody);
     
+    // Optionaler Scroll-Wrapper (zusätzlich zum Container-Scroll erlaubt)
     const wrapper = document.createElement('div');
     wrapper.className = 'table-scroll';
     wrapper.style.width = '100%';
