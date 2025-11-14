@@ -663,3 +663,81 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-weight: 700 !important;
   border-top: 2px solid #333;
 }
+/* --- Season Table Fix: eigenständige Klasse & Scroll-Konsistenz --- */
+#seasonContainer {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  box-sizing: border-box;
+  padding-right: 20px;
+  padding-bottom: 16px;
+  position: relative;
+}
+
+/* Entferne ggf. .table-scroll Padding-Anpassung, wenn nicht mehr genutzt */
+.table-scroll { padding-bottom: 0; }
+
+.season-table {
+  width: auto;
+  min-width: max-content;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 6px 0 10px 0;
+  table-layout: auto;
+  /* optional leichte Schattenabgrenzung */
+  /* box-shadow: 0 0 4px rgba(0,0,0,0.08); */
+}
+
+.season-table thead th {
+  background: var(--header-bg);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 6px 6px;
+  border-bottom: 2px solid #333;
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.season-table tbody td {
+  padding: 6px 6px;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.season-table tbody tr:nth-child(odd) { background: var(--row-odd); }
+.season-table tbody tr:nth-child(even) { background: var(--row-even); }
+
+.season-table thead th:nth-child(1),
+.season-table tbody td:nth-child(1) {
+  min-width: 60px;
+  text-align: center;
+}
+
+.season-table thead th:nth-child(2),
+.season-table tbody td:nth-child(2) {
+  text-align: left;
+  font-weight: 700;
+  padding-left: 12px;
+  min-width: 140px;
+}
+
+.season-table thead th:last-child,
+.season-table tbody td:last-child {
+  min-width: 80px;
+  padding-right: 12px;
+}
+
+.season-table .total-row td {
+  background: var(--header-bg);
+  color: var(--text-color);
+  font-weight: 700;
+  border-top: 2px solid #333;
+  padding: 8px 6px;
+}
