@@ -128,7 +128,7 @@ h1 {
   -webkit-overflow-scrolling: touch;
 }
 
-/* SPEZIFISCH: GAME DATA – gleichmässig verteilen, kein Scrollbar, bei Bedarf minimal kleiner */
+/* SPEZIFISCH: GAME DATA */
 #statsPage .top-bar {
   max-width: 100% !important;
   width: 100% !important;
@@ -151,7 +151,7 @@ h1 {
 }
 #statsPage #timerBtn { font-variant-numeric: tabular-nums; }
 
-/* Season-Seite eigene Topbar */
+/* Season-Seite Topbar */
 #seasonPage .top-bar {
   gap: 12px;
   justify-content: center;
@@ -344,10 +344,14 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 .period-buttons.bottom-row .time-btn:hover { background-color: #ffd3d3; }
 .time-btn:active { transform: scale(1.05); }
 
-/* SEASON PAGE - WIE GOAL VALUE PAGE */
+/* ====================== */
+/* SEASON PAGE = GOAL VALUE PAGE */
+/* exakt gleiche Scrollbarkeit, Größe und Anordnung */
+/* ====================== */
+
 #seasonPage {
   width: 100%;
-  max-width: 1100px;
+  max-width: none;
 }
 
 #seasonPage h1 {
@@ -360,6 +364,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   margin: 0 auto;
 }
 
+/* identisch zu #goalValueContainer */
 #seasonContainer {
   width: 100% !important;
   max-width: 100% !important;
@@ -372,7 +377,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   position: relative !important;
 }
 
-/* Scrollbar für Season Container - Chrome/Safari */
+/* Scrollbar identisch */
 #seasonContainer::-webkit-scrollbar {
   height: 18px !important;
   background: rgba(0, 0, 0, 0.2) !important;
@@ -385,58 +390,67 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 #seasonContainer::-webkit-scrollbar-thumb:hover {
   background: #3a9d7a !important;
 }
-
-/* Firefox Scrollbar */
 #seasonContainer {
   scrollbar-width: auto !important;
   scrollbar-color: #44bb91 rgba(0, 0, 0, 0.2) !important;
 }
 
+/* Tabelle exakt wie Goal Value */
 #seasonPage table {
   width: auto !important;
   min-width: max-content !important;
-  table-layout: auto !important;
   border-collapse: collapse !important;
   font-size: 0.95rem !important;
   margin: 0 !important;
+  margin-top: 6px !important;
   margin-bottom: 10px !important;
   display: table !important;
 }
 
-#seasonPage th, #seasonPage td {
-  padding: 8px 10px;
+#seasonPage thead th {
+  padding: 6px 4px !important;                /* wie Goal Value */
+  border-bottom: 2px solid #333;
+  background: var(--header-bg);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 40;
   text-align: center;
-  border-bottom: none;
+}
+
+#seasonPage th,
+#seasonPage td {
+  padding: 6px 4px !important;                /* wie Goal Value */
+  text-align: center;
+  border-bottom: 1px solid rgba(0,0,0,0.06);  /* wie Goal Value */
   color: var(--text-color);
   white-space: nowrap;
 }
 
-#seasonPage thead th {
-  background: var(--header-bg);
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  padding: 8px 10px;
-  border-bottom: 2px solid #333;
+/* Nr-Spalte nicht abschneiden, aber nicht fix stauchen */
+#seasonPage thead th:nth-child(1),
+#seasonPage tbody td:nth-child(1) {
+  min-width: 60px;
   text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
-#seasonPage thead th:nth-child(1), #seasonPage tbody td:nth-child(1) {
-  min-width: 50px;
-  text-align: center;
-}
-
-#seasonPage thead th:nth-child(2), #seasonPage tbody td:nth-child(2) {
+/* Namen linksbündig wie Goal Value */
+#seasonPage thead th:nth-child(2),
+#seasonPage tbody td:nth-child(2) {
   text-align: left;
   white-space: nowrap;
   font-weight: 700;
   padding-left: 12px;
-  min-width: 120px;
+  min-width: 140px;
 }
 
+/* Zebra wie üblich */
 #seasonPage tbody tr:nth-child(odd) { background-color: var(--row-odd); }
 #seasonPage tbody tr:nth-child(even) { background-color: var(--row-even); }
 
+/* Total-Zeile wie Überschrift */
 #seasonPage .total-row td {
   background: var(--header-bg) !important;
   color: var(--text-color) !important;
@@ -444,7 +458,10 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   border-top: 2px solid #333;
 }
 
-/* GOAL VALUE PAGE */
+/* ============ */
+/* GOAL VALUE PAGE (Referenz) */
+/* ============ */
+
 #goalValuePage {
   width: 100%;
   max-width: none;
@@ -479,7 +496,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   scrollbar-color: #44bb91 rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Scroll-Wrapper */
+/* Scroll-Wrapper (generisch) */
 .table-scroll {
   width: 100% !important;
   overflow-x: auto !important;
@@ -537,15 +554,8 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 }
 
 /* Zellen */
-.gv-data-cell {
-  cursor: pointer;
-  user-select: none;
-  font-weight: 600;
-  -webkit-tap-highlight-color: transparent;
-}
-.gv-value-cell {
-  font-weight: 700;
-}
+.gv-data-cell { cursor: pointer; user-select: none; font-weight: 600; -webkit-tap-highlight-color: transparent; }
+.gv-value-cell { font-weight: 700; }
 
 /* Opponent Input */
 .goalvalue-title-input {
@@ -561,10 +571,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-size: 0.85rem !important;
   font-weight: 600 !important;
 }
-.goalvalue-title-input:focus {
-  outline: 2px solid #44bb91 !important;
-  background: #2a2a2a !important;
-}
+.goalvalue-title-input:focus { outline: 2px solid #44bb91 !important; background: #2a2a2a !important; }
 
 /* Dropdown */
 .gv-scale-dropdown {
@@ -587,19 +594,9 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   background-size: 12px !important;
   padding-right: 26px !important;
 }
-.gv-scale-dropdown:hover {
-  background-color: #2a2a2a !important;
-  border-color: rgba(255,255,255,0.3) !important;
-}
-.gv-scale-dropdown:focus {
-  outline: 2px solid #44bb91 !important;
-  border-color: #44bb91 !important;
-}
-.gv-scale-dropdown option {
-  background: #1a1a1a !important;
-  color: #fff !important;
-  padding: 10px !important;
-}
+.gv-scale-dropdown:hover { background-color: #2a2a2a !important; border-color: rgba(255,255,255,0.3) !important; }
+.gv-scale-dropdown:focus { outline: 2px solid #44bb91 !important; border-color: #44bb91 !important; }
+.gv-scale-dropdown option { background: #1a1a1a !important; color: #fff !important; padding: 10px !important; }
 
 /* Inline Editor (Reserve) */
 .inline-editor {
@@ -621,19 +618,10 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   box-sizing: border-box;
   padding: 2px 6px 6px 6px;
 }
-#seasonMapMomentumContainer svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  user-select: none;
-}
-#seasonMapMomentumContainer text {
-  dominant-baseline: middle;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  font-size: 11px;
-}
+#seasonMapMomentumContainer svg { display: block; width: 100%; height: auto; user-select: none; }
+#seasonMapMomentumContainer text { dominant-baseline: middle; font-family: "Segoe UI", Roboto, Arial, sans-serif; font-size: 11px; }
 
-/* Responsive Kleinigkeiten */
+/* Responsive */
 @media (max-width: 900px) {
   .torbild-layout { flex-direction: column; height: auto; }
   .goalvalue-title-input { font-size: 0.85rem; }
@@ -642,8 +630,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 }
 
 /* Totalzeilen-Farben angleichen an Titelzeilen */
-
-/* GAME DATA (Stats) */
 #statsPage .total-row td {
   background: var(--header-bg) !important;
   color: var(--text-color) !important;
