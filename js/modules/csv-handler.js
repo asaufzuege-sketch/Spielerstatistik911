@@ -246,6 +246,10 @@ App.csvHandler = {
         });
         totalSeconds += App.data.playerTimes[p.name] || 0;
       });
+
+      // Gegner-Schüsse aus der Totals-Zelle lesen (falls gesetzt)
+      const shotTotalCell = document.querySelector(".total-cell[data-cat='Shot']");
+      const oppShots = Number(shotTotalCell?.dataset?.opp || 0);
       
       const totalRow = new Array(header.length).fill("");
       totalRow[1] = `Total (${App.data.selectedPlayers.length})`;
@@ -259,6 +263,9 @@ App.csvHandler = {
           const totalFace = totals["FaceOffs"] || 0;
           const percent = totalFace ? Math.round((totals["FaceOffs Won"] / totalFace) * 100) : 0;
           totalRow[colIndex] = `${totals["FaceOffs Won"]} (${percent}%)`;
+        } else if (c === "Shot") {
+          // NEU: eigene Schüsse vs Gegner-Schüsse
+          totalRow[colIndex] = `${totals["Shot"] || 0} vs ${oppShots}`;
         } else {
           totalRow[colIndex] = String(totals[c] || 0);
         }
