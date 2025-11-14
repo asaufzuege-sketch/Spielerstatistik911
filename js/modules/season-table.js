@@ -2,32 +2,30 @@
 App.seasonTable = {
   container: null,
   sortState: { index: null, asc: true },
-  
+
   init() {
     this.container = document.getElementById("seasonContainer");
-    
+
     // Event Listeners
     document.getElementById("exportSeasonFromStatsBtn")?.addEventListener("click", () => {
       this.exportFromStats();
     });
-    
+
     document.getElementById("exportSeasonBtn")?.addEventListener("click", () => {
       this.exportCSV();
     });
-    
+
     document.getElementById("resetSeasonBtn")?.addEventListener("click", () => {
       this.reset();
     });
   },
-  
+
   render() {
     if (!this.container) return;
-    
-    // Container leeren und KEINE inline-Layout-Styles setzen
+
+    // Nur leeren, KEINE inline Layout-Styles setzen – Scroll steuert CSS (#seasonContainer)
     this.container.innerHTML = "";
-    // WICHTIG: keine container.style.display/justifyContent/... setzen
-    // Das CSS (#seasonContainer) steuert das Scroll/Größenverhalten analog Goal Value
-    
+
     const headerCols = [
       "Nr", "Spieler", "Games",
       "Goals", "Assists", "Points", "+/-", "Ø +/-",
@@ -35,42 +33,39 @@ App.seasonTable = {
       "Penalty", "Goal Value", "FaceOffs", "FaceOffs Won", "FaceOffs %", "Time",
       "MVP", "MVP Points"
     ];
-    
+
+    // Tabelle direkt in den Container (kein zusätzlicher Wrapper) – wie Goal Value
     const table = document.createElement("table");
-    table.className = "stats-table";
-    // Inline-Styles so nahe wie möglich an Goal Value:
-    table.style.width = "auto";
-    table.style.margin = "0";
-    table.style.borderCollapse = "collapse";
-    // keine border-spacing/overflow/border-radius setzen, damit CSS dominiert
-    
+    table.className = "season-table"; // eigener Klassenname für gezieltes CSS
+
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
-    
+
     headerCols.forEach((h, idx) => {
       const th = document.createElement("th");
       th.textContent = h;
       th.dataset.colIndex = idx;
       th.className = "sortable";
       th.style.cursor = "pointer";
-      
+
       const arrow = document.createElement("span");
       arrow.className = "sort-arrow";
       arrow.style.marginLeft = "6px";
       th.appendChild(arrow);
-      
+
       headerRow.appendChild(th);
     });
-    
+
     thead.appendChild(headerRow);
     table.appendChild(thead);
-    
+
     const tbody = document.createElement("tbody");
-    
-    if (App.goalValue && typeof App.goalValue.ensureDataForSeason === 'function') {
+
+    // Sicherstellen, dass GoalValue-Daten da sind (falls verwendet)
+    if (App.goalValue && typeof App.goalValue.ensureDataForSeason === "function") {
       App.goalValue.ensureDataForSeason();
     }
-    
+
     const rows = Object.keys(App.data.seasonData).map(name => {
       const d = App.data.seasonData[name];
       const games = Number(d.games || 0);
@@ -84,16 +79,16 @@ App.seasonTable = {
       const faceOffsWon = Number(d.faceOffsWon || 0);
       const faceOffPercent = faceOffs ? Math.round((faceOffsWon / faceOffs) * 100) : 0;
       const timeSeconds = Number(d.timeSeconds || 0);
-      
+
       const avgPlusMinus = games ? (plusMinus / games) : 0;
       const shotsPerGame = games ? (shots / games) : 0;
       const goalsPerGame = games ? (goals / games) : 0;
       const pointsPerGame = games ? (points / games) : 0;
       const shotsPercent = shots ? Math.round((goals / shots) * 100) : 0;
-      
+
       let goalValue = "";
       try {
-        if (App.goalValue && typeof App.goalValue.computeValueForPlayer === 'function') {
+        if (App.goalValue && typeof App.goalValue.computeValueForPlayer === "function") {
           goalValue = App.goalValue.computeValueForPlayer(d.name) || Number(d.goalValue || 0);
         } else {
           goalValue = Number(d.goalValue || 0);
@@ -101,11 +96,11 @@ App.seasonTable = {
       } catch (e) {
         goalValue = Number(d.goalValue || 0);
       }
-      
+
       const assistsPerGame = games ? (assists / games) : 0;
       const penaltyPerGame = games ? (penalty / games) : 0;
       const gvNum = Number(goalValue || 0);
-      
+
       const mvpPointsNum = (
         (assistsPerGame * 8) +
         (avgPlusMinus * 0.5) +
@@ -113,9 +108,9 @@ App.seasonTable = {
         (goalsPerGame + (games ? (gvNum / games) * 10 : 0)) -
         (penaltyPerGame * 1.2)
       );
-      
+
       const mvpPointsRounded = Number(mvpPointsNum.toFixed(1));
-      
+
       const cells = [
         d.num || "",
         d.name,
@@ -139,30 +134,30 @@ App.seasonTable = {
         "",
         ""
       ];
-      
+
       return {
         name: d.name,
         num: d.num || "",
-        cells: cells,
+        cells,
         raw: { games, goals, assists, points, plusMinus, shots, penalty, faceOffs, faceOffsWon, faceOffPercent, timeSeconds, goalValue },
-        mvpPointsRounded: mvpPointsRounded
+        mvpPointsRounded
       };
     });
-    
+
+    // MVP Rank berechnen und eintragen
     const sortedByMvp = rows.slice().sort((a, b) => (b.mvpPointsRounded || 0) - (a.mvpPointsRounded || 0));
     const uniqueScores = [...new Set(sortedByMvp.map(r => r.mvpPointsRounded))];
     const scoreToRank = {};
-    uniqueScores.forEach((s, idx) => { 
-      scoreToRank[s] = idx + 1; 
-    });
-    
+    uniqueScores.forEach((s, idx) => { scoreToRank[s] = idx + 1; });
+
     rows.forEach(r => {
       const mvpIdx = headerCols.length - 2;
       const mvpPointsIdx = headerCols.length - 1;
       r.cells[mvpIdx] = (scoreToRank[r.mvpPointsRounded] || "");
       r.cells[mvpPointsIdx] = Number(r.mvpPointsRounded.toFixed(1));
     });
-    
+
+    // Sortieren
     let displayRows = rows.slice();
     if (this.sortState.index === null) {
       displayRows.sort((a, b) => (b.raw.points || 0) - (a.raw.points || 0));
@@ -179,7 +174,8 @@ App.seasonTable = {
         return 0;
       });
     }
-    
+
+    // Body rendern
     displayRows.forEach(r => {
       const tr = document.createElement("tr");
       r.cells.forEach((c, cellIdx) => {
@@ -193,23 +189,14 @@ App.seasonTable = {
       });
       tbody.appendChild(tr);
     });
-    
-    // Kopfzeilen-Farben wie gewohnt
-    const colors = App.helpers.getColorStyles?.() || { headerBg: "var(--header-bg)", headerText: "#fff" };
-    headerRow.querySelectorAll("th").forEach(th => {
-      th.style.background = colors.headerBg;
-      th.style.color = colors.headerText;
-      th.style.fontWeight = "700";
-      th.style.padding = "8px";
-    });
-    
+
     // Total-Zeile
     if (rows.length > 0) {
       const sums = {
         games: 0, goals: 0, assists: 0, points: 0, plusMinus: 0,
         shots: 0, penalty: 0, faceOffs: 0, faceOffsWon: 0, timeSeconds: 0
       };
-      
+
       rows.forEach(r => {
         const rs = r.raw;
         sums.games += rs.games;
@@ -223,12 +210,12 @@ App.seasonTable = {
         sums.faceOffsWon += rs.faceOffsWon;
         sums.timeSeconds += rs.timeSeconds;
       });
-      
+
       const count = rows.length;
       const avgShotsPercent = sums.shots ? Math.round((sums.goals / sums.shots) * 100) : 0;
       const avgFacePercent = sums.faceOffs ? Math.round((sums.faceOffsWon / sums.faceOffs) * 100) : 0;
       const avgTime = Math.round(sums.timeSeconds / count);
-      
+
       const totalCells = new Array(headerCols.length).fill("");
       totalCells[1] = "Total Ø";
       totalCells[2] = (sums.games / count).toFixed(1);
@@ -250,7 +237,7 @@ App.seasonTable = {
       totalCells[18] = App.helpers.formatTimeMMSS(avgTime);
       totalCells[19] = "";
       totalCells[20] = "";
-      
+
       const trTotal = document.createElement("tr");
       trTotal.className = "total-row";
       totalCells.forEach((c, idx) => {
@@ -260,26 +247,17 @@ App.seasonTable = {
           td.style.textAlign = "left";
           td.style.fontWeight = "700";
         }
-        td.style.background = colors.headerBg;
-        td.style.color = colors.headerText;
-        td.style.fontWeight = "700";
-        td.style.padding = "8px";
         trTotal.appendChild(td);
       });
       tbody.appendChild(trTotal);
     }
-    
+
     table.appendChild(tbody);
-    
-    // Optionaler Scroll-Wrapper (zusätzlich zum Container-Scroll erlaubt)
-    const wrapper = document.createElement('div');
-    wrapper.className = 'table-scroll';
-    wrapper.style.width = '100%';
-    wrapper.style.boxSizing = 'border-box';
-    wrapper.appendChild(table);
-    
-    this.container.appendChild(wrapper);
-    
+
+    // Wichtig: Tabelle direkt in den Container (nur EIN Scroll-Container)
+    this.container.appendChild(table);
+
+    // Sort UI
     this.updateSortUI(table);
     table.querySelectorAll("th.sortable").forEach(th => {
       th.addEventListener("click", () => {
@@ -294,7 +272,7 @@ App.seasonTable = {
       });
     });
   },
-  
+
   updateSortUI(table) {
     const ths = table.querySelectorAll("th.sortable");
     ths.forEach(th => {
@@ -308,20 +286,20 @@ App.seasonTable = {
       }
     });
   },
-  
+
   exportFromStats() {
     if (!confirm("Spiel zu Season exportieren?")) return;
-    
+
     if (!App.data.selectedPlayers.length) {
       alert("Keine Spieler ausgewählt.");
       return;
     }
-    
+
     App.data.selectedPlayers.forEach(p => {
       const name = p.name;
       const stats = App.data.statsData[name] || {};
       const timeSeconds = Number(App.data.playerTimes[name] || 0);
-      
+
       if (!App.data.seasonData[name]) {
         App.data.seasonData[name] = {
           num: p.num || "",
@@ -338,7 +316,7 @@ App.seasonTable = {
           goalValue: 0
         };
       }
-      
+
       const sd = App.data.seasonData[name];
       sd.games += 1;
       sd.goals += Number(stats.Goals || 0);
@@ -350,9 +328,9 @@ App.seasonTable = {
       sd.faceOffsWon += Number(stats["FaceOffs Won"] || 0);
       sd.timeSeconds += timeSeconds;
       sd.num = p.num || sd.num || "";
-      
+
       try {
-        if (App.goalValue && typeof App.goalValue.computeValueForPlayer === 'function') {
+        if (App.goalValue && typeof App.goalValue.computeValueForPlayer === "function") {
           sd.goalValue = App.goalValue.computeValueForPlayer(name) || sd.goalValue || 0;
         } else {
           sd.goalValue = sd.goalValue || 0;
@@ -361,38 +339,38 @@ App.seasonTable = {
         sd.goalValue = sd.goalValue || 0;
       }
     });
-    
+
     App.storage.saveSeasonData();
-    
+
     const keep = confirm("Spiel wurde in Season exportiert. Daten in Game beibehalten? (OK = Ja)");
     if (!keep) {
       App.data.selectedPlayers.forEach(p => {
         const name = p.name;
         if (!App.data.statsData[name]) App.data.statsData[name] = {};
-        App.data.categories.forEach(c => { 
-          App.data.statsData[name][c] = 0; 
+        App.data.categories.forEach(c => {
+          App.data.statsData[name][c] = 0;
         });
         App.data.playerTimes[name] = 0;
       });
       App.storage.saveStatsData();
       App.storage.savePlayerTimes();
-      if (App.statsTable && typeof App.statsTable.render === 'function') {
+      if (App.statsTable && typeof App.statsTable.render === "function") {
         App.statsTable.render();
       }
     }
-    
-    if (typeof App.showPage === 'function') {
+
+    if (typeof App.showPage === "function") {
       App.showPage("season");
     }
     this.render();
   },
-  
+
   exportCSV() {
     try {
       const names = Object.keys(App.data.seasonData || {});
-      if (!names.length) { 
-        alert("Keine Season-Daten vorhanden."); 
-        return; 
+      if (!names.length) {
+        alert("Keine Season-Daten vorhanden.");
+        return;
       }
 
       const header = [
@@ -478,14 +456,14 @@ App.seasonTable = {
       const MVP_IDX = header.indexOf("MVP");
       const allPoints = tempRows.map(r => Number(r[MVP_POINTS_IDX]) || 0);
       const sortedDescUnique = [...new Set(allPoints.slice().sort((a,b) => b - a))];
-      
+
       function rankFor(val) {
         const i = sortedDescUnique.indexOf(val);
         return i === -1 ? "" : (i + 1);
       }
-      
-      tempRows.forEach(r => { 
-        r[MVP_IDX] = rankFor(Number(r[MVP_POINTS_IDX]) || 0); 
+
+      tempRows.forEach(r => {
+        r[MVP_IDX] = rankFor(Number(r[MVP_POINTS_IDX]) || 0);
       });
 
       rows.push(...tempRows);
@@ -553,15 +531,15 @@ App.seasonTable = {
       a.click();
       URL.revokeObjectURL(a.href);
       alert("Season CSV exportiert.");
-    } catch(e) {
+    } catch (e) {
       console.error("Season CSV Export fehlgeschlagen:", e);
       alert("Fehler beim Season-Export (siehe Konsole).");
     }
   },
-  
+
   reset() {
     if (!confirm("Season-Daten löschen?")) return;
-    
+
     App.data.seasonData = {};
     localStorage.removeItem("seasonData");
     this.render();
