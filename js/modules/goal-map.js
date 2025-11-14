@@ -196,7 +196,8 @@ App.goalMap = {
         
         let lastTap = 0;
         let clickTimeout = null;
-        let touchStart = 0;
+        let touchStartTs = 0;
+        let suppressNextClick = false; // verhindert Click nach Touch (+2 Fix)
         
         const updateValue = (delta) => {
           const current = Number(btn.textContent) || 0;
@@ -207,7 +208,12 @@ App.goalMap = {
           localStorage.setItem("timeData", JSON.stringify(timeData));
         };
         
-        btn.addEventListener("click", () => {
+        // Click nur ausführen, wenn nicht direkt zuvor ein Touch war
+        btn.addEventListener("click", (e) => {
+          if (suppressNextClick) {
+            suppressNextClick = false;
+            return;
+          }
           const now = Date.now();
           const diff = now - lastTap;
           if (diff < 300) {
@@ -226,27 +232,33 @@ App.goalMap = {
           }
         });
         
-        btn.addEventListener("touchstart", (e) => {
+        // Touch: auf touchend werten; nach Touch den Click kurzzeitig unterdrücken
+        btn.addEventListener("touchstart", () => {
+          // nur markieren; Logik auf touchend
+          touchStartTs = Date.now();
+        }, { passive: true });
+        
+        btn.addEventListener("touchend", (e) => {
           const now = Date.now();
-          const diff = now - touchStart;
+          const diff = now - touchStartTs;
           if (diff < 300) {
-            e.preventDefault();
+            // Doppeltipp -> -1
             if (clickTimeout) {
               clearTimeout(clickTimeout);
               clickTimeout = null;
             }
             updateValue(-1);
-            touchStart = 0;
+            touchStartTs = 0;
           } else {
-            touchStart = now;
-            setTimeout(() => {
-              if (touchStart !== 0) {
-                updateValue(+1);
-                touchStart = 0;
-              }
-            }, 300);
+            // Einfachtipp -> +1
+            touchStartTs = now;
+            updateValue(+1);
           }
-        }, { passive: true });
+          // Nach Touch Click unterdrücken, um +2 zu verhindern
+          suppressNextClick = true;
+          setTimeout(() => { suppressNextClick = false; }, 350);
+          e.preventDefault?.();
+        }, { passive: false });
       });
     });
   },
