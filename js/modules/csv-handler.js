@@ -191,4 +191,102 @@ App.csvHandler = {
             timeSeconds: parsed.timeSeconds,
             goalValue: parsed.goalValue
           };
-        } else
+        } else {
+          const existing = App.data.seasonData[name];
+          existing.num = existing.num || parsed.num || "";
+          existing.games += parsed.games || 0;
+          existing.goals += parsed.goals;
+          existing.assists += parsed.assists;
+          existing.plusMinus += parsed.plusMinus;
+          existing.shots += parsed.shots;
+          existing.penaltys += parsed.penaltys;
+          existing.faceOffs += parsed.faceOffs;
+          existing.faceOffsWon += parsed.faceOffsWon;
+          existing.timeSeconds += parsed.timeSeconds;
+          existing.goalValue += parsed.goalValue;
+        }
+      }
+      
+      App.storage.saveSeasonData();
+      App.seasonTable?.render();
+      alert("Season-CSV importiert (additiv).");
+    } catch (e) {
+      console.error("Import Season CSV failed:", e);
+      alert("Fehler beim Season-Import (siehe Konsole).");
+    }
+  },
+  
+  exportStats() {
+    try {
+      if (!App.data.selectedPlayers.length) {
+        alert("Keine Spieler ausgewählt.");
+        return;
+      }
+      
+      const header = ["Nr", "Spieler", ...App.data.categories, "Time"];
+      const rows = [header];
+      
+      App.data.selectedPlayers.forEach(p => {
+        const row = [p.num || "", p.name];
+        App.data.categories.forEach(cat => {
+          row.push(String(Number(App.data.statsData[p.name]?.[cat] || 0)));
+        });
+        row.push(App.helpers.formatTimeMMSS(Number(App.data.playerTimes[p.name] || 0)));
+        rows.push(row);
+      });
+      
+      // Total Row
+      const totals = {};
+      App.data.categories.forEach(c => totals[c] = 0);
+      let totalSeconds = 0;
+      
+      App.data.selectedPlayers.forEach(p => {
+        App.data.categories.forEach(c => {
+          totals[c] += Number(App.data.statsData[p.name]?.[c] || 0);
+        });
+        totalSeconds += App.data.playerTimes[p.name] || 0;
+      });
+      
+      const totalRow = new Array(header.length).fill("");
+      totalRow[1] = `Total (${App.data.selectedPlayers.length})`;
+      App.data.categories.forEach((c, idx) => {
+        const colIndex = 2 + idx;
+        if (c === "+/-") {
+          const vals = App.data.selectedPlayers.map(p => Number(App.data.statsData[p.name]?.[c] || 0));
+          const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+          totalRow[colIndex] = `Ø ${avg}`;
+        } else if (c === "FaceOffs Won") {
+          const totalFace = totals["FaceOffs"] || 0;
+          const percent = totalFace ? Math.round((totals["FaceOffs Won"] / totalFace) * 100) : 0;
+          totalRow[colIndex] = `${totals["FaceOffs Won"]} (${percent}%)`;
+        } else {
+          totalRow[colIndex] = String(totals[c] || 0);
+        }
+      });
+      totalRow[header.length - 1] = App.helpers.formatTimeMMSS(totalSeconds);
+      rows.push(totalRow);
+      
+      // Timer Row
+      const timerRow = new Array(header.length).fill("");
+      timerRow[1] = "TIMER";
+      timerRow[header.length - 1] = App.helpers.formatTimeMMSS(App.timer.seconds || 0);
+      rows.push(timerRow);
+      
+      const csv = rows.map(r => r.join(";")).join("\n");
+      this.downloadCSV(csv, "stats.csv");
+      
+    } catch (e) {
+      console.error("Export Stats CSV failed:", e);
+      alert("Fehler beim Exportieren.");
+    }
+  },
+  
+  downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+};
