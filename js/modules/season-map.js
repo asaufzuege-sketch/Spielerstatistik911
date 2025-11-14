@@ -16,41 +16,54 @@ App.seasonMap = {
     
     // Time Tracking (Read-Only)
     this.initTimeTracking();
+
+    // Re-Align bei Resize
+    window.addEventListener('resize', () => {
+      // kleine Verzögerung, bis Layout stabil ist
+      setTimeout(() => this.render(), 120);
+    });
   },
   
   render() {
     const boxes = Array.from(document.querySelectorAll(App.selectors.seasonMapBoxes));
     boxes.forEach(box => box.querySelectorAll(".marker-dot").forEach(d => d.remove()));
     
-    // Bild-Eigenschaften von Goal Map übernehmen
+    // Bild-Eigenschaften und Größen robust von Goal Map übernehmen
     try {
       const torBoxes = Array.from(document.querySelectorAll(App.selectors.torbildBoxes));
-      boxes.forEach((seasonBox, idx) => {
-        const seasonImg = seasonBox.querySelector('img');
-        const torBox = torBoxes[idx];
-        
-        if (seasonImg && torBox) {
+      const syncSizes = () => {
+        boxes.forEach((seasonBox, idx) => {
+          const seasonImg = seasonBox.querySelector('img');
+          const torBox = torBoxes[idx];
+          if (!seasonImg || !torBox) return;
+
           const torImg = torBox.querySelector('img');
-          if (torImg) {
-            try {
-              const torCS = getComputedStyle(torImg);
-              const torObjectFit = torCS.getPropertyValue('object-fit') || 'contain';
-              seasonImg.style.objectFit = torObjectFit;
-              
-              const torRect = torImg.getBoundingClientRect();
-              if (torRect && torRect.width && torRect.height) {
-                seasonImg.style.width = `${Math.round(torRect.width)}px`;
-                seasonImg.style.height = `${Math.round(torRect.height)}px`;
-                seasonBox.style.width = `${Math.round(torRect.width)}px`;
-                seasonBox.style.height = `${Math.round(torRect.height)}px`;
-                seasonBox.style.overflow = 'hidden';
-              }
-            } catch (e) {
-              seasonImg.style.objectFit = 'contain';
-            }
+          try {
+            const torCS = torImg ? getComputedStyle(torImg) : null;
+            const torObjectFit = torCS?.getPropertyValue('object-fit')?.trim() || 'contain';
+            seasonImg.style.objectFit = torObjectFit;
+          } catch (e) {
+            seasonImg.style.objectFit = 'contain';
           }
-        }
-      });
+
+          // Nimm die Containergröße des Torfeldes (nicht nur das Bild)
+          const torRect = torBox.getBoundingClientRect();
+          if (torRect && torRect.width && torRect.height) {
+            // Fixiere Season-Box auf exakt dieselbe Größe
+            seasonBox.style.width = `${Math.round(torRect.width)}px`;
+            seasonBox.style.height = `${Math.round(torRect.height)}px`;
+            seasonBox.style.overflow = 'hidden';
+            // Bild füllt Box vollständig
+            seasonImg.style.width = '100%';
+            seasonImg.style.height = '100%';
+          }
+        });
+      };
+
+      // Versuche mehrfach zu synchronisieren (falls Bilder noch laden)
+      syncSizes();
+      setTimeout(syncSizes, 100);
+      setTimeout(syncSizes, 300);
     } catch (e) {
       console.warn("Layout copy failed:", e);
     }
@@ -118,7 +131,8 @@ App.seasonMap = {
     }
     
     App.showPage("seasonMap");
-    this.render();
+    // Nach Page-Switch kurz warten, dann rendern (Größen sind dann stabiler)
+    setTimeout(() => this.render(), 100);
   },
   
   readTimeTrackingFromBox() {
