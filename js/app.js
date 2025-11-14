@@ -28,6 +28,30 @@ document.addEventListener("DOMContentLoaded", () => {
   App.goalMap.init();
   App.seasonMap.init();
   App.goalValue.init();
+
+  // 4a. Mobile-Flex-Wrap für Button-Leisten (verhindert Zusammenquetschen)
+  function applyFlexWrapFor(ids) {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      const parent = el?.parentElement;
+      if (parent) {
+        parent.style.display = 'flex';
+        parent.style.flexWrap = 'wrap';
+        parent.style.gap = '8px';
+        Array.from(parent.querySelectorAll('button')).forEach(b => {
+          b.style.flex = '0 1 auto';
+          b.style.minWidth = 'min(46%, 220px)'; // bricht auf kleinen Screens um
+        });
+      }
+    });
+  }
+  // auf bekannten Buttonleisten anwenden (Stats/Season/Goal Map/Season Map/Goal Value)
+  applyFlexWrapFor([
+    'exportBtn','resetBtn','importCsvStatsBtn',
+    'exportSeasonBtn','resetSeasonBtn','importCsvSeasonBtn','exportSeasonFromStatsBtn',
+    'resetTorbildBtn','exportSeasonMapBtn','resetSeasonMapBtn',
+    'resetGoalValueBtn'
+  ]);
   
   // 5. Navigation Event Listeners
   document.getElementById("selectPlayersBtn")?.addEventListener("click", () => {
