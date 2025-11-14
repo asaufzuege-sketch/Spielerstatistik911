@@ -61,6 +61,7 @@ App.statsTable = {
         td.dataset.player = p.name;
         td.dataset.cat = c;
         td.style.color = val > 0 ? colors.pos : val < 0 ? colors.neg : colors.zero;
+        td.style.touchAction = 'manipulation'; // verhindert Double-Tap-Zoom
         tr.appendChild(td);
       });
       
@@ -97,20 +98,22 @@ App.statsTable = {
       td.className = "total-cell";
       td.dataset.cat = c;
       td.textContent = "0";
+      td.style.touchAction = 'manipulation';
       totalTr.appendChild(td);
     });
     
     const timeTotal = document.createElement("td");
     timeTotal.className = "total-cell";
     timeTotal.dataset.cat = "Time";
+    timeTotal.style.touchAction = 'manipulation';
     totalTr.appendChild(timeTotal);
     
     tbody.appendChild(totalTr);
     table.appendChild(tbody);
     this.container.appendChild(table);
     
-    // Click handlers für Werte
-    this.attachValueClickHandlers();
+    // Click/Touch handlers für Werte
+    this.attachValueInteractionHandlers();
     
     // Update Totals & Colors
     this.updateTotals();
@@ -142,11 +145,12 @@ App.statsTable = {
     });
   },
   
-  attachValueClickHandlers() {
+  attachValueInteractionHandlers() {
     this.container.querySelectorAll("td[data-player][data-cat]").forEach(td => {
       let clickTimeout = null;
-      
-      // Single Click: +1
+      let lastTouch = 0;
+
+      // Single Click: +1 (Desktop)
       td.addEventListener("click", () => {
         if (clickTimeout) clearTimeout(clickTimeout);
         clickTimeout = setTimeout(() => {
@@ -154,8 +158,8 @@ App.statsTable = {
           clickTimeout = null;
         }, 200);
       });
-      
-      // Double Click: -1
+
+      // Double Click: -1 (Desktop)
       td.addEventListener("dblclick", (e) => {
         e.preventDefault();
         if (clickTimeout) {
@@ -163,7 +167,25 @@ App.statsTable = {
           clickTimeout = null;
         }
         this.changeValue(td, -1);
-      });
+      }, { passive: false });
+
+      // Touch: Einzeltap +1, Doppeltap -1 (Mobile, ohne Zoom)
+      td.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        const now = Date.now();
+        if (now - lastTouch < 300) {
+          // Double tap
+          if (clickTimeout) { clearTimeout(clickTimeout); clickTimeout = null; }
+          this.changeValue(td, -1);
+          lastTouch = 0;
+        } else {
+          lastTouch = now;
+          clickTimeout = setTimeout(() => {
+            this.changeValue(td, 1);
+            clickTimeout = null;
+          }, 250);
+        }
+      }, { passive: false });
     });
   },
   
@@ -217,14 +239,20 @@ App.statsTable = {
       } else if (cat === "Time") {
         tc.textContent = App.helpers.formatTimeMMSS(timeSum);
       } else if (cat === "Shot") {
-        if (!tc.dataset.opp) tc.dataset.opp = "0";
+        // Persistenten Gegner-Schuss-Zähler laden/setzen
+        if (!tc.dataset.opp) {
+          const savedOpp = Number(localStorage.getItem("opponentShots") || 0);
+          tc.dataset.opp = String(savedOpp);
+        }
         const own = totals["Shot"] || 0;
         const opp = Number(tc.dataset.opp) || 0;
         const ownC = own > opp ? "#00ff80" : opp > own ? "#ff4c4c" : "#ffffff";
         const oppC = opp > own ? "#00ff80" : own > opp ? "#ff4c4c" : "#ffffff";
         tc.innerHTML = `<span style="color:${ownC}">${own}</span> <span style="color:white">vs</span> <span style="color:${oppC}">${opp}</span>`;
         tc.onclick = () => {
-          tc.dataset.opp = String(Number(tc.dataset.opp || 0) + 1);
+          const next = Number(tc.dataset.opp || 0) + 1;
+          tc.dataset.opp = String(next);
+          localStorage.setItem("opponentShots", String(next));
           this.updateTotals();
         };
       } else {
