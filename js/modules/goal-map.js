@@ -193,12 +193,14 @@ App.goalMap = {
         const hasStored = (timeData[periodNum] && typeof timeData[periodNum][idx] !== "undefined");
         const stored = hasStored ? Number(timeData[periodNum][idx]) : Number(btn.textContent) || 0;
         btn.textContent = stored;
-        
-        let lastTap = 0;
-        let clickTimeout = null;
-        let touchStartTs = 0;
-        let suppressNextClick = false; // verhindert Click nach Touch (+2 Fix)
-        
+
+        // Verhindere Doppeltap-Zoom und Duplikatevents
+        btn.style.touchAction = 'manipulation';
+
+        // Einheitliches Handling per Pointer Events
+        let lastPointerUp = { touch: 0, mouse: 0 };
+        let addTimer = null;
+
         const updateValue = (delta) => {
           const current = Number(btn.textContent) || 0;
           const newVal = Math.max(0, current + delta);
@@ -207,57 +209,37 @@ App.goalMap = {
           timeData[periodNum][idx] = newVal;
           localStorage.setItem("timeData", JSON.stringify(timeData));
         };
-        
-        // Click nur ausführen, wenn nicht direkt zuvor ein Touch war
-        btn.addEventListener("click", (e) => {
-          if (suppressNextClick) {
-            suppressNextClick = false;
-            return;
-          }
-          const now = Date.now();
-          const diff = now - lastTap;
-          if (diff < 300) {
-            if (clickTimeout) {
-              clearTimeout(clickTimeout);
-              clickTimeout = null;
-            }
-            updateValue(-1);
-            lastTap = 0;
-          } else {
-            clickTimeout = setTimeout(() => {
+
+        btn.addEventListener("pointerup", (e) => {
+          // Nur eine Quelle verarbeiten
+          if (e.pointerType === 'touch') {
+            e.preventDefault();
+            const now = Date.now();
+            if (now - lastPointerUp.touch < 300) {
+              // Double-Tap: -1
+              if (addTimer) { clearTimeout(addTimer); addTimer = null; }
+              updateValue(-1);
+              lastPointerUp.touch = 0;
+            } else {
+              // Single Tap: +1 (sofort, um Verzögerung zu vermeiden)
               updateValue(+1);
-              clickTimeout = null;
-            }, 300);
-            lastTap = now;
-          }
-        });
-        
-        // Touch: auf touchend werten; nach Touch den Click kurzzeitig unterdrücken
-        btn.addEventListener("touchstart", () => {
-          // nur markieren; Logik auf touchend
-          touchStartTs = Date.now();
-        }, { passive: true });
-        
-        btn.addEventListener("touchend", (e) => {
-          const now = Date.now();
-          const diff = now - touchStartTs;
-          if (diff < 300) {
-            // Doppeltipp -> -1
-            if (clickTimeout) {
-              clearTimeout(clickTimeout);
-              clickTimeout = null;
+              lastPointerUp.touch = now;
             }
-            updateValue(-1);
-            touchStartTs = 0;
           } else {
-            // Einfachtipp -> +1
-            touchStartTs = now;
-            updateValue(+1);
+            // Maus: Single +1, Double innerhalb 300ms = -1
+            const now = Date.now();
+            if (now - lastPointerUp.mouse < 300) {
+              if (addTimer) { clearTimeout(addTimer); addTimer = null; }
+              updateValue(-1);
+              lastPointerUp.mouse = 0;
+            } else {
+              addTimer = setTimeout(() => {
+                updateValue(+1);
+                addTimer = null;
+              }, 220);
+              lastPointerUp.mouse = now;
+            }
           }
-          // Nach Touch Click unterdrücken, um +2 zu verhindern
-          suppressNextClick = true;
-          setTimeout(() => { suppressNextClick = false; }, 350);
-          e.preventDefault?.();
         }, { passive: false });
       });
     });
