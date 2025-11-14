@@ -54,7 +54,6 @@ App.csvHandler = {
     // Season Import Button - prüfe ob Button im HTML existiert
     const existingImportBtn = document.getElementById("importCsvSeasonBtn");
     if (existingImportBtn) {
-      // Button existiert bereits im HTML, nur Event Listener hinzufügen
       existingImportBtn.addEventListener("click", () => {
         this.fileInput.dataset.target = "season";
         this.fileInput.click();
@@ -247,9 +246,11 @@ App.csvHandler = {
         totalSeconds += App.data.playerTimes[p.name] || 0;
       });
 
-      // Gegner-Schüsse aus der Totals-Zelle lesen (falls gesetzt)
+      // Gegner-Schüsse zuverlässig holen (DOM oder Persistenz)
       const shotTotalCell = document.querySelector(".total-cell[data-cat='Shot']");
-      const oppShots = Number(shotTotalCell?.dataset?.opp || 0);
+      const oppShots = Number(
+        (shotTotalCell?.dataset?.opp ?? localStorage.getItem("opponentShots")) || 0
+      );
       
       const totalRow = new Array(header.length).fill("");
       totalRow[1] = `Total (${App.data.selectedPlayers.length})`;
@@ -264,7 +265,7 @@ App.csvHandler = {
           const percent = totalFace ? Math.round((totals["FaceOffs Won"] / totalFace) * 100) : 0;
           totalRow[colIndex] = `${totals["FaceOffs Won"]} (${percent}%)`;
         } else if (c === "Shot") {
-          // NEU: eigene Schüsse vs Gegner-Schüsse
+          // Export exakt: EIGEN vs GEGNER
           totalRow[colIndex] = `${totals["Shot"] || 0} vs ${oppShots}`;
         } else {
           totalRow[colIndex] = String(totals[c] || 0);
